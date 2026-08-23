@@ -14,16 +14,19 @@ STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  
 AGENT        DeepSeek tool-calling loop: sql_query · vector_search · resume_match
 SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
 
-## Current state (2026-08-21)
+## Current state (2026-08-23)
 
-Phase 2, sequenced as a vertical slice (see DECISIONS: pipeline). `pipeline.py` has `pending`,
-`build_agent`, `extract`, `persist` and `run`; `persist` is verified against the live DB across all
-three statuses and the orphan-clearing re-run. **Blocking:** `main` is still the old serial stub, so
-`run` has never executed and no LLM call has been made yet. `extract`'s LLM path has not survived a
-real DeepSeek response end to end — that happens on the pilot.
+Phase 2. The pipeline runs end to end: `main` (argparse, `--dry-run`, wall-clock + `Stats`) is in
+`pipeline.py`, and two 20-row HN pilots have completed against DeepSeek. Grounding audited over the
+first pilot — 218/218 quotes verbatim once curly apostrophes are folded. `description` was added
+before the full pass, since backfilling it would mean paying for extraction twice.
 
-**Corpus** — 1,098 rows, remote-only, all inside the rolling 90-day window: hn 502, habr 460,
-web3 100, remotive 36.
+**Blocking the full corpus pass:** `ruff` fails on `pipeline.py:331` (E501, the summary log format
+string). `configure_tracing` is a stub returning `None` and nothing calls it — Langfuse is unwired.
+
+**Corpus** — 1,098 raw rows, 20 extracted (35 roles, 33 with a description). Second pilot returned
+35 roles where the first returned 36 over the same 20 postings: DeepSeek splits roles
+nondeterministically, so a role-count delta is not by itself a prompt improvement.
 
 ## Phase 1 — Ingestion
 
@@ -44,14 +47,36 @@ web3 100, remotive 36.
 - [x] `src/extraction/prompt.py` — `SYSTEM_PROMPT`, injected so prompt edits stay a clean diff
 - [x] `src/extraction/pipeline.py` — `pending`, `build_agent`, `extract`, `persist`
 - [x] `src/extraction/pipeline.py` — `run` (chunked gather, serial writes)
-- [ ] `src/extraction/pipeline.py` — `main` (argparse, `--dry-run`, wall-clock + `Stats` summary)
+- [x] `src/extraction/pipeline.py` — `main` (argparse, `--dry-run`, wall-clock + `Stats` summary)
+- [x] `db/schema/006_role_description.sql` — per-role `description`, inheritable (see DECISIONS)
 - [ ] Langfuse Cloud over OTLP, wired in `main` (see DECISIONS: pipeline)
-- [ ] Pilot `--limit 20 --source hn` to measure cost and wall-clock, then the full corpus pass
+- [x] Pilot `--limit 20 --source hn` — ran twice, before and after `description`
+- [ ] Full corpus pass over the remaining 1,078 rows
 - [ ] Tests for `schema.py`, `source_adapters.py`, `transform.py` — need the offline fixtures below
 - [ ] Hand-label `evals/gold_labeled.json`, keyed on `(source, external_id)` (see DECISIONS)
 - [ ] Eval script: per-field accuracy, `doc_type`, role count, role alignment (see DECISIONS)
 - [ ] Iterate the prompt until acceptable accuracy (set the threshold after the first run)
 - [ ] Cache a fixture response per source so the demo path runs offline
+
+## Still open
+
+- **Grounding is asserted, not verified.** `_required_quotes_present` checks a quote *key* exists;
+  nothing compares the quote to the source text. The model is honest today (218/218) — the schema
+  would not notice if it stopped. Fix is Pydantic validation context carrying the source text.
+- **`stack` fill-down over-propagates.** Posting 2's five roles all carry
+  `['claude code','cursor','aider']`, grounded in a quote that appears only in the Agentic Engineer
+  bullet. Phase 3's `unnest(stack)` skill frequency will over-count.
+- **`description` fill-down does not separate roles that differ only by seniority.** Posting 12's
+  Senior and Staff Product Engineer share one span. Embed `title + seniority + stack + description`,
+  not the description alone.
+- **Observed paraphrase mode:** the model stitches bullet lists into one paragraph (posting 12),
+  each sentence verbatim but the whole not a contiguous span. Watch it as the corpus scales.
+- **`id` is not a stable key.** `persist` is DELETE-then-INSERT, so re-extraction retires every
+  `structured_postings.id`. Key anything downstream — `posting_embeddings` above all — on
+  `(raw_posting_id, role_index)`.
+- `Stats` is logged and then discarded; the full pass's cost will not be recoverable afterward.
+- The `ON CONFLICT` comment on `structured_postings_raw_posting_role_key` in 005 is stale —
+  `persist` deletes and re-inserts.
 
 ## Phase 3 — Storage + retrieval
 
@@ -76,8 +101,8 @@ web3 100, remotive 36.
 
 ## Next
 
-1. `pipeline.py` — `main`, then Langfuse wiring inside it
-2. Pilot 20 HN rows; measure cost and wall-clock
+1. Wrap `pipeline.py:331` so `ruff` passes, then commit
+2. Langfuse over OTLP — implement `configure_tracing`, pass the provider into `build_agent`
 3. Full corpus extraction pass — accept bad output, store it
 4. `embed.py` + the `posting_embeddings` DDL at `vector(1024)`
 5. pgvector `vector_search`

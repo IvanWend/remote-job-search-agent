@@ -72,6 +72,7 @@ def _role(role: RoleExtraction, posting: PostingExtraction, index: int) -> Norma
         salary_min=salary_min,
         salary_max=salary_max,
         salary_currency=currency,
+        description=_inherit(role, posting, "description"),
         source_quotes=_quotes(role, posting),
     )
 

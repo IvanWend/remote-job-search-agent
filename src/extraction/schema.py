@@ -14,6 +14,7 @@ DocType = Literal["posting", "candidate", "other"]
 # Fill-down targets: a role leaving one None inherits the posting's value.
 INHERITABLE_FIELDS = (
     "stack",
+    "description",
     "location",
     "remote_policy",
     "employment_type",
@@ -75,10 +76,13 @@ class _Verbatim(BaseModel):
 
 
 class _Inheritable(_Verbatim):
-    """The eight fields that fill down posting -> role. None at role level means
+    """The nine fields that fill down posting -> role. None at role level means
     inherit, not absent."""
 
     stack: list[str] | None = None
+    # Verbatim span, so it grounds itself — deliberately not in QUOTE_REQUIRED,
+    # which would store the same text twice.
+    description: str | None = None
     location: str | None = None
     remote_policy: str | None = None
     employment_type: str | None = None
@@ -132,6 +136,7 @@ class NormalizedRole(BaseModel):
     salary_min: int | None = None  # monthly
     salary_max: int | None = None  # monthly
     salary_currency: str | None = None  # ISO 4217, never converted
+    description: str | None = None
     source_quotes: dict[str, str] = {}
 
 

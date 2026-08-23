@@ -1,6 +1,9 @@
+import argparse
 import asyncio
 import logging
 import os
+import time
+from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Literal, NamedTuple
 
@@ -23,8 +26,8 @@ INSERT_ROLE_SQL = """
 INSERT INTO structured_postings (
     raw_posting_id, role_index, company, title, location,
     seniority, remote_policy, employment_type, stack,
-    salary_min, salary_max, salary_currency, source_quotes
-) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    salary_min, salary_max, salary_currency, description, source_quotes
+) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
 
 UPSERT_RUN_SQL = """
@@ -141,6 +144,9 @@ async def extract(agent: Any, payload: ExtractionInput, model: str) -> Outcome:
     except (AgentRunError, TimeoutError) as exc:
         return Outcome(status="error", model=model, error=str(exc)[:500])
 
+    except Exception as exc:
+        return Outcome(status="error", model=model, error=str(exc)[:500])
+
 
 def persist(conn, raw_posting_id: int, outcome: Outcome) -> None:
     with conn.transaction(), conn.cursor() as cur:
@@ -162,6 +168,7 @@ def persist(conn, raw_posting_id: int, outcome: Outcome) -> None:
                     role.salary_min,
                     role.salary_max,
                     role.salary_currency,
+                    role.description,
                     psycopg.types.json.Jsonb(role.source_quotes),
                 )
                 for role in outcome.roles
@@ -251,7 +258,7 @@ async def run(
             roles_count,
             tokens_in_total,
             tokens_out_total,
-            requests_count
+            requests_count,
         )
 
     return Stats(
@@ -265,23 +272,72 @@ async def run(
     )
 
 
+def parse_pipeline_args():
+    parser = argparse.ArgumentParser(description="Pipeline entrypoint")
+
+    parser.add_argument(
+        "--source",
+        action="append",
+        default=None,
+        help="Repeatable source filter",
+    )
+
+    parser.add_argument("--limit", type=int, default=None, help="Max pending row to process")
+
+    parser.add_argument(
+        "--chunk-size", type=int, default=5, help="Default number of chunks to process"
+    )
+
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="deepseek:deepseek-v4-flash",
+        help="Default name of the LLM model",
+    )
+
+    parser.add_argument("--dry-run", action="store_true", help="Dry run action")
+
+    return parser.parse_args()
+
+
+def configure_tracing():
+    return None
+
+
 async def main():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    )
+
+    args = parse_pipeline_args()
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
-        rows = pending(conn, sources=["hn"], limit=5)
-        agent = build_agent(model="deepseek:deepseek-v4-flash", system_prompt=SYSTEM_PROMPT)
-        extraction_results = []
+        rows = pending(conn, sources=args.source, limit=args.limit)
+        logger.info("Found %d pending rows to process.", len(rows))
 
-        for row in rows:
-            payload = to_extraction_input(row.source, row.external_id, row.raw_text)
-            outcome = await extract(agent, payload, model="deepseek:deepseek-v4-flash")
-            extraction_results.append((row.id, outcome))
+        if args.dry_run:
+            logger.info("Dry run mode enabled. No changes will be persisted.")
+            source_counts = Counter(row.source for row in rows)
+            logger.info("Pending row breakdown by source: %s", dict(source_counts))
+            first_few_ids = [row.id for row in rows[:5]]
+            logger.info("First few pending row IDs: %s", first_few_ids)
+            return
 
-        print("Extraction results:")
-        for row_id, outcome in extraction_results:
-            print(f"Row ID: {row_id}, Outcome: {outcome}")
-            persist(conn, row_id, outcome)
+        agent = build_agent(args.model, SYSTEM_PROMPT)
+        t0 = time.perf_counter()
+        stats = await run(conn, agent, rows, args.model, args.chunk_size)
+        elapsed = time.perf_counter() - t0
+        logger.info(
+            "Extraction completed in %.2f seconds | ok=%d invalid=%d error=%d roles=%d in=%d out=%d req=%d",
+            elapsed,
+            stats.ok,
+            stats.invalid,
+            stats.error,
+            stats.roles,
+            stats.tokens_in,
+            stats.tokens_out,
+            stats.requests,
+        )
 
 
 if __name__ == "__main__":
