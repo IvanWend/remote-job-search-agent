@@ -14,17 +14,17 @@ STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  
 AGENT        DeepSeek tool-calling loop: sql_query · vector_search · resume_match
 SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
 
-## Current state (2026-08-23)
+## Current state (2026-08-25)
 
 Phase 2. The pipeline runs end to end: `main` (argparse, `--dry-run`, wall-clock + `Stats`) is in
 `pipeline.py`, and two 20-row HN pilots have completed against DeepSeek. Grounding audited over the
 first pilot — 218/218 quotes verbatim once curly apostrophes are folded. `description` was added
 before the full pass, since backfilling it would mean paying for extraction twice.
 
-**Blocking the full corpus pass:** `ruff` fails on `pipeline.py:331` (E501, the summary log format
-string). `configure_tracing` is a stub returning `None` and nothing calls it — Langfuse is unwired.
+**Nothing blocks the full corpus pass.** Toolchain gate is green. Langfuse is wired: one trace per
+posting named `extract-posting`, all postings of one invocation grouped under a `session_id`.
 
-**Corpus** — 1,098 raw rows, 20 extracted (35 roles, 33 with a description). Second pilot returned
+**Corpus** — 1,098 raw rows, 23 extracted (43 roles), 1,075 pending. Second pilot returned
 35 roles where the first returned 36 over the same 20 postings: DeepSeek splits roles
 nondeterministically, so a role-count delta is not by itself a prompt improvement.
 
@@ -49,34 +49,15 @@ nondeterministically, so a role-count delta is not by itself a prompt improvemen
 - [x] `src/extraction/pipeline.py` — `run` (chunked gather, serial writes)
 - [x] `src/extraction/pipeline.py` — `main` (argparse, `--dry-run`, wall-clock + `Stats` summary)
 - [x] `db/schema/006_role_description.sql` — per-role `description`, inheritable (see DECISIONS)
-- [ ] Langfuse Cloud over OTLP, wired in `main` (see DECISIONS: pipeline)
+- [x] Langfuse tracing via the `langfuse` v4 SDK, wired in `main` (see DECISIONS: pipeline)
 - [x] Pilot `--limit 20 --source hn` — ran twice, before and after `description`
-- [ ] Full corpus pass over the remaining 1,078 rows
+- [x] Langfuse model definition for `deepseek-v4-flash` — peak rates (see DECISIONS: pipeline)
+- [ ] Full corpus pass over the remaining 1,075 rows
 - [ ] Tests for `schema.py`, `source_adapters.py`, `transform.py` — need the offline fixtures below
 - [ ] Hand-label `evals/gold_labeled.json`, keyed on `(source, external_id)` (see DECISIONS)
 - [ ] Eval script: per-field accuracy, `doc_type`, role count, role alignment (see DECISIONS)
 - [ ] Iterate the prompt until acceptable accuracy (set the threshold after the first run)
 - [ ] Cache a fixture response per source so the demo path runs offline
-
-## Still open
-
-- **Grounding is asserted, not verified.** `_required_quotes_present` checks a quote *key* exists;
-  nothing compares the quote to the source text. The model is honest today (218/218) — the schema
-  would not notice if it stopped. Fix is Pydantic validation context carrying the source text.
-- **`stack` fill-down over-propagates.** Posting 2's five roles all carry
-  `['claude code','cursor','aider']`, grounded in a quote that appears only in the Agentic Engineer
-  bullet. Phase 3's `unnest(stack)` skill frequency will over-count.
-- **`description` fill-down does not separate roles that differ only by seniority.** Posting 12's
-  Senior and Staff Product Engineer share one span. Embed `title + seniority + stack + description`,
-  not the description alone.
-- **Observed paraphrase mode:** the model stitches bullet lists into one paragraph (posting 12),
-  each sentence verbatim but the whole not a contiguous span. Watch it as the corpus scales.
-- **`id` is not a stable key.** `persist` is DELETE-then-INSERT, so re-extraction retires every
-  `structured_postings.id`. Key anything downstream — `posting_embeddings` above all — on
-  `(raw_posting_id, role_index)`.
-- `Stats` is logged and then discarded; the full pass's cost will not be recoverable afterward.
-- The `ON CONFLICT` comment on `structured_postings_raw_posting_role_key` in 005 is stale —
-  `persist` deletes and re-inserts.
 
 ## Phase 3 — Storage + retrieval
 
@@ -101,11 +82,9 @@ nondeterministically, so a role-count delta is not by itself a prompt improvemen
 
 ## Next
 
-1. Wrap `pipeline.py:331` so `ruff` passes, then commit
-2. Langfuse over OTLP — implement `configure_tracing`, pass the provider into `build_agent`
-3. Full corpus extraction pass — accept bad output, store it
-4. `embed.py` + the `posting_embeddings` DDL at `vector(1024)`
-5. pgvector `vector_search`
-6. DeepSeek tool-calling loop, three tools
-7. FastAPI + SSE
-8. Then label the gold set and write the eval script
+1. Full corpus extraction pass — accept bad output, store it
+2. `embed.py` + the `posting_embeddings` DDL at `vector(1024)`
+3. pgvector `vector_search`
+4. DeepSeek tool-calling loop, three tools
+5. FastAPI + SSE
+6. Then label the gold set and write the eval script

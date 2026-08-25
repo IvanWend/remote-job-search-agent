@@ -1,15 +1,19 @@
 import argparse
 import asyncio
+import contextlib
 import logging
 import os
 import time
 from collections import Counter
+from collections.abc import Iterator
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any, Literal, NamedTuple
 
 import psycopg
 import psycopg.types.json
 from dotenv import load_dotenv
+from langfuse import Langfuse, get_client, propagate_attributes
 from pydantic_ai import Agent, AgentRunError, UnexpectedModelBehavior
 
 from src.extraction.prompt import SYSTEM_PROMPT
@@ -106,7 +110,53 @@ def build_agent(model: str, system_prompt: str, retries=2) -> Agent[None, Postin
     )
 
 
-async def extract(agent: Any, payload: ExtractionInput, model: str) -> Outcome:
+@contextlib.contextmanager
+def _span(client: Langfuse | None, name: str) -> Iterator[Any]:
+    # Every traced block goes through here so an untraced run costs one None check
+    # rather than an `if client` around each span.
+    if client is None:
+        yield None
+    else:
+        with client.start_as_current_observation(as_type="span", name=name) as span:
+            yield span
+
+
+async def extract(
+    agent: Any,
+    payload: ExtractionInput,
+    model: str,
+    raw_posting_id: int | None = None,
+    client: Langfuse | None = None,
+) -> Outcome:
+    with _span(client, "extract-posting") as span:
+        outcome = await _extract(agent, payload, model)
+
+        if span is not None:
+            span.update(
+                input=payload.text,
+                output={
+                    "company": outcome.company,
+                    "roles": [r.model_dump(exclude_none=True) for r in outcome.roles],
+                }
+                if outcome.status == "ok"
+                else None,
+                metadata={
+                    "raw_posting_id": raw_posting_id,
+                    "source": payload.source,
+                    "external_id": payload.external_id,
+                    "doc_type": outcome.doc_type,
+                    "role_count": len(outcome.roles),
+                    "status": outcome.status,
+                    "prefiltered": outcome.model == "prefilter",
+                },
+                level="ERROR" if outcome.status != "ok" else None,
+                status_message=outcome.error,
+            )
+
+        return outcome
+
+
+async def _extract(agent: Any, payload: ExtractionInput, model: str) -> Outcome:
     if payload.prefilter:
         return Outcome(
             status="ok",
@@ -190,7 +240,12 @@ def persist(conn, raw_posting_id: int, outcome: Outcome) -> None:
 
 
 async def run(
-    conn, agent: Agent[None, PostingExtraction], rows: list[RawRow], model: str, chunk_size: int = 5
+    conn,
+    agent: Agent[None, PostingExtraction],
+    rows: list[RawRow],
+    model: str,
+    chunk_size: int = 5,
+    client: Langfuse | None = None,
 ) -> Stats:
 
     ok_count = 0
@@ -201,65 +256,97 @@ async def run(
     tokens_out_total = 0
     requests_count = 0
 
-    for i in range(0, len(rows), chunk_size):
-        chunk = rows[i : i + chunk_size]
-        logger.info("Processing chunk of %d rows...", len(chunk))
+    # One session per invocation: Langfuse then aggregates tokens and cost across
+    # every posting of a pass, which `Stats` only ever logs and throws away.
+    session = f"extract-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}"
+    scope = (
+        propagate_attributes(session_id=session, tags=["extraction"])
+        if client is not None
+        else contextlib.nullcontext()
+    )
 
-        failed_outcomes = []
-        failed_rows = []
-        payloads = []
+    with scope:
+        for i in range(0, len(rows), chunk_size):
+            chunk = rows[i : i + chunk_size]
+            logger.info("Processing chunk of %d rows...", len(chunk))
 
-        for row in chunk:
-            try:
-                payload = to_extraction_input(row.source, row.external_id, row.raw_text)
-                payloads.append(payload)
-            except Exception as exc:
-                error_outcome = Outcome(status="error", model="adapter", error=str(exc)[:500])
-                failed_outcomes.append(error_outcome)
-                failed_rows.append(row.id)
+            failed_outcomes = []
+            failed_rows = []
+            payloads = []
 
-                logger.error("Row %s adapter failed: %s", row.id, str(exc)[:200])
+            for row in chunk:
+                try:
+                    payload = to_extraction_input(row.source, row.external_id, row.raw_text)
+                    payloads.append((row.id, payload))
+                except Exception as exc:
+                    error_outcome = Outcome(status="error", model="adapter", error=str(exc)[:500])
+                    failed_outcomes.append(error_outcome)
+                    failed_rows.append(row.id)
 
-        outcomes = await asyncio.gather(*(extract(agent, p, model) for p in payloads))
+                    logger.error("Row %s adapter failed: %s", row.id, str(exc)[:200])
 
-        success_idx = 0
-        failure_idx = 0
+                    # Same span name as a model failure: one filter in Langfuse finds
+                    # every posting that produced no structured output, whatever the cause.
+                    with _span(client, "extract-posting") as span:
+                        if span is not None:
+                            span.update(
+                                input=row.raw_text,
+                                metadata={
+                                    "raw_posting_id": row.id,
+                                    "source": row.source,
+                                    "external_id": row.external_id,
+                                    "status": "error",
+                                    "stage": "adapter",
+                                },
+                                level="ERROR",
+                                status_message=str(exc)[:500],
+                            )
 
-        for row in chunk:
-            if row.id in failed_rows:
-                outcome = failed_outcomes[failure_idx]
-                failure_idx += 1
-            else:
-                outcome = outcomes[success_idx]
-                success_idx += 1
+            outcomes = await asyncio.gather(
+                *(
+                    extract(agent, p, model, raw_posting_id=rid, client=client)
+                    for rid, p in payloads
+                )
+            )
 
-            persist(conn, row.id, outcome)
+            success_idx = 0
+            failure_idx = 0
 
-            if outcome.status == "ok":
-                ok_count += 1
-            elif outcome.status == "invalid":
-                invalid_count += 1
-            elif outcome.status == "error":
-                error_count += 1
+            for row in chunk:
+                if row.id in failed_rows:
+                    outcome = failed_outcomes[failure_idx]
+                    failure_idx += 1
+                else:
+                    outcome = outcomes[success_idx]
+                    success_idx += 1
 
-            roles_count += len(outcome.roles)
-            tokens_in_total += outcome.tokens_in
-            tokens_out_total += outcome.tokens_out
-            requests_count += outcome.requests
+                persist(conn, row.id, outcome)
 
-        done = i + len(chunk)
-        logger.info(
-            "[%d/%d] Progress | ok=%d invalid=%d error=%d roles=%d in=%d out=%d req=%d",
-            done,
-            len(rows),
-            ok_count,
-            invalid_count,
-            error_count,
-            roles_count,
-            tokens_in_total,
-            tokens_out_total,
-            requests_count,
-        )
+                if outcome.status == "ok":
+                    ok_count += 1
+                elif outcome.status == "invalid":
+                    invalid_count += 1
+                elif outcome.status == "error":
+                    error_count += 1
+
+                roles_count += len(outcome.roles)
+                tokens_in_total += outcome.tokens_in
+                tokens_out_total += outcome.tokens_out
+                requests_count += outcome.requests
+
+            done = i + len(chunk)
+            logger.info(
+                "[%d/%d] Progress | ok=%d invalid=%d error=%d roles=%d in=%d out=%d req=%d",
+                done,
+                len(rows),
+                ok_count,
+                invalid_count,
+                error_count,
+                roles_count,
+                tokens_in_total,
+                tokens_out_total,
+                requests_count,
+            )
 
     return Stats(
         ok=ok_count,
@@ -300,8 +387,22 @@ def parse_pipeline_args():
     return parser.parse_args()
 
 
-def configure_tracing():
-    return None
+def configure_tracing() -> Langfuse | None:
+    """Return an authenticated Langfuse client, or None so the pipeline runs untraced."""
+    if not (os.getenv("LANGFUSE_PUBLIC_KEY") and os.getenv("LANGFUSE_SECRET_KEY")):
+        logger.info("Langfuse keys absent — running untraced.")
+        return None
+
+    client = get_client()
+    if not client.auth_check():
+        logger.warning("Langfuse auth check failed — running untraced.")
+        return None
+
+    # Emits the agent-run and model-request spans. The Langfuse client owns the
+    # global tracer provider they export through, so this needs no arguments.
+    Agent.instrument_all()
+    logger.info("Langfuse tracing enabled (%s).", os.getenv("LANGFUSE_BASE_URL", "default host"))
+    return client
 
 
 async def main():
@@ -323,21 +424,29 @@ async def main():
             logger.info("First few pending row IDs: %s", first_few_ids)
             return
 
-        agent = build_agent(args.model, SYSTEM_PROMPT)
-        t0 = time.perf_counter()
-        stats = await run(conn, agent, rows, args.model, args.chunk_size)
-        elapsed = time.perf_counter() - t0
-        logger.info(
-            "Extraction completed in %.2f seconds | ok=%d invalid=%d error=%d roles=%d in=%d out=%d req=%d",
-            elapsed,
-            stats.ok,
-            stats.invalid,
-            stats.error,
-            stats.roles,
-            stats.tokens_in,
-            stats.tokens_out,
-            stats.requests,
-        )
+        client = configure_tracing()
+
+        try:
+            agent = build_agent(args.model, SYSTEM_PROMPT)
+            t0 = time.perf_counter()
+            stats = await run(conn, agent, rows, args.model, args.chunk_size, client=client)
+            elapsed = time.perf_counter() - t0
+            logger.info(
+                "Extraction completed in %.2f seconds | "
+                "ok=%d invalid=%d error=%d roles=%d in=%d out=%d req=%d",
+                elapsed,
+                stats.ok,
+                stats.invalid,
+                stats.error,
+                stats.roles,
+                stats.tokens_in,
+                stats.tokens_out,
+                stats.requests,
+            )
+        finally:
+            # Spans are batched; a short run exits before the flush timer fires.
+            if client is not None:
+                client.flush()
 
 
 if __name__ == "__main__":
