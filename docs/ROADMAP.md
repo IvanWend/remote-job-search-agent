@@ -14,19 +14,21 @@ STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  
 AGENT        DeepSeek tool-calling loop: sql_query · vector_search · resume_match
 SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
 
-## Current state (2026-08-25)
+## Current state (2026-08-27)
 
-Phase 2. The pipeline runs end to end: `main` (argparse, `--dry-run`, wall-clock + `Stats`) is in
-`pipeline.py`, and two 20-row HN pilots have completed against DeepSeek. Grounding audited over the
-first pilot — 218/218 quotes verbatim once curly apostrophes are folded. `description` was added
-before the full pass, since backfilling it would mean paying for extraction twice.
+Phase 2. **The full corpus pass is done** — 1,098/1,098 raw rows extracted into 1,663 roles:
+1,077 `ok`, 14 `invalid` (retries exhausted), 7 `error` (all the 65s timeout, which stringifies to
+`''` — the `error` column is empty for every one of them). ~85 min at `chunk_size=5`.
 
-**Nothing blocks the full corpus pass.** Toolchain gate is green. Langfuse is wired: one trace per
-posting named `extract-posting`, all postings of one invocation grouped under a `session_id`.
+Two repairs followed, neither of which called the model again (`src/extraction/backfill.py`):
+the salary quote is now re-parsed when the four `salary_*` fields are unusable, and the fields the
+prompt never sees are filled from the board's own JSON. Salary coverage went 149 → 481 roles,
+`company` 1,465 → 1,649. 655 roles carry a `derived_fields` list saying which columns are not the
+model's own answer.
 
-**Corpus** — 1,098 raw rows, 23 extracted (43 roles), 1,075 pending. Second pilot returned
-35 roles where the first returned 36 over the same 20 postings: DeepSeek splits roles
-nondeterministically, so a role-count delta is not by itself a prompt improvement.
+`evals/grounding_audit.py` measures grounding over the whole corpus: **12,598 values checked,
+2.7% not verbatim** — 293 stitched (a bullet list joined into a paragraph, every fragment real),
+51 absent. `company`, `remote_policy`, `employment_type` and `salary` are at 0.0%.
 
 ## Phase 1 — Ingestion
 
@@ -52,8 +54,13 @@ nondeterministically, so a role-count delta is not by itself a prompt improvemen
 - [x] Langfuse tracing via the `langfuse` v4 SDK, wired in `main` (see DECISIONS: pipeline)
 - [x] Pilot `--limit 20 --source hn` — ran twice, before and after `description`
 - [x] Langfuse model definition for `deepseek-v4-flash` — peak rates (see DECISIONS: pipeline)
-- [ ] Full corpus pass over the remaining 1,075 rows
-- [ ] Tests for `schema.py`, `source_adapters.py`, `transform.py` — need the offline fixtures below
+- [x] Full corpus pass over the remaining 1,075 rows
+- [x] `normalize.parse_salary_phrase` — the salary quote as fallback (see DECISIONS: schema)
+- [x] `source_adapters.apply_ground_truth` + `db/schema/007_derived_fields.sql`
+- [x] `src/extraction/backfill.py` — both repairs over the stored corpus, re-runnable
+- [x] `evals/grounding_audit.py` — quote and `description` containment over the whole corpus
+- [x] `tests/test_transform.py`, `tests/test_source_adapters.py` — the two new decisions
+- [ ] Tests for `schema.py` — needs the offline fixtures below
 - [ ] Hand-label `evals/gold_labeled.json`, keyed on `(source, external_id)` (see DECISIONS)
 - [ ] Eval script: per-field accuracy, `doc_type`, role count, role alignment (see DECISIONS)
 - [ ] Iterate the prompt until acceptable accuracy (set the threshold after the first run)
@@ -82,9 +89,8 @@ nondeterministically, so a role-count delta is not by itself a prompt improvemen
 
 ## Next
 
-1. Full corpus extraction pass — accept bad output, store it
-2. `embed.py` + the `posting_embeddings` DDL at `vector(1024)`
-3. pgvector `vector_search`
-4. DeepSeek tool-calling loop, three tools
-5. FastAPI + SSE
-6. Then label the gold set and write the eval script
+1. `embed.py` + the `posting_embeddings` DDL at `vector(1024)`
+2. pgvector `vector_search`
+3. DeepSeek tool-calling loop, three tools
+4. FastAPI + SSE
+5. Then label the gold set and write the eval script

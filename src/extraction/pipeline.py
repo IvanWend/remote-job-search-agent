@@ -18,7 +18,11 @@ from pydantic_ai import Agent, AgentRunError, UnexpectedModelBehavior
 
 from src.extraction.prompt import SYSTEM_PROMPT
 from src.extraction.schema import DocType, NormalizedRole, PostingExtraction
-from src.extraction.source_adapters import ExtractionInput, to_extraction_input
+from src.extraction.source_adapters import (
+    ExtractionInput,
+    apply_ground_truth,
+    to_extraction_input,
+)
 from src.extraction.transform import transform
 
 load_dotenv()
@@ -30,8 +34,9 @@ INSERT_ROLE_SQL = """
 INSERT INTO structured_postings (
     raw_posting_id, role_index, company, title, location,
     seniority, remote_policy, employment_type, stack,
-    salary_min, salary_max, salary_currency, description, source_quotes
-) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    salary_min, salary_max, salary_currency, description, source_quotes,
+    derived_fields
+) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
 
 UPSERT_RUN_SQL = """
@@ -175,7 +180,9 @@ async def _extract(agent: Any, payload: ExtractionInput, model: str) -> Outcome:
             agent.run(payload.text, model_settings={"timeout": 60}), timeout=65.0
         )
         usage = result.usage
-        normalized = transform(result.output)
+        # Held-out fields never reach the model, so the board's own JSON is the
+        # only place they exist. Gaps only — see apply_ground_truth.
+        normalized = apply_ground_truth(transform(result.output), payload.ground_truth)
 
         return Outcome(
             status="ok",
@@ -220,6 +227,7 @@ def persist(conn, raw_posting_id: int, outcome: Outcome) -> None:
                     role.salary_currency,
                     role.description,
                     psycopg.types.json.Jsonb(role.source_quotes),
+                    role.derived_fields,
                 )
                 for role in outcome.roles
             ]

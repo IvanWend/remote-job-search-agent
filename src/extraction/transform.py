@@ -4,11 +4,14 @@ from src.extraction.normalize import (
     currency_enum,
     employment_enum,
     normalize_stack,
+    parse_salary_phrase,
     remote_policy_enum,
+    salary_band_implausible,
     seniority_enum,
     to_monthly,
 )
 from src.extraction.schema import (
+    SALARY_QUOTE_KEY,
     NormalizedPosting,
     NormalizedRole,
     PostingExtraction,
@@ -34,7 +37,7 @@ def _stack(role: RoleExtraction, posting: PostingExtraction) -> list[str]:
 _Salary = tuple[int | None, int | None, str | None]
 
 
-def _salary(role: RoleExtraction, posting: PostingExtraction) -> _Salary:
+def _salary_from_fields(role: RoleExtraction, posting: PostingExtraction) -> _Salary:
     low = _inherit(role, posting, "salary_min")
     high = _inherit(role, posting, "salary_max")
     period = _inherit(role, posting, "salary_period")
@@ -53,6 +56,30 @@ def _salary(role: RoleExtraction, posting: PostingExtraction) -> _Salary:
     return monthly_low, monthly_high, currency_enum(_inherit(role, posting, "salary_currency"))
 
 
+def resolve_salary(
+    low: int | None, high: int | None, currency: str | None, quotes: dict[str, str]
+) -> _Salary:
+    """The four salary_* fields first, the salary quote as fallback. The model
+    routinely omits salary_period on a band it quoted in full, and states
+    "$300-450K" as 300 and 450000 — both leave the fields unusable while the
+    quote still says exactly what the posting said. Public because backfill.py
+    re-runs exactly this decision against stored rows."""
+    if low is None and high is None:
+        return _salary_from_quote(quotes, currency)
+    if salary_band_implausible(low, high):
+        # Prefer nothing over a band that lost its multiplier: 13 to 15 a month
+        # passes every constraint and poisons every aggregate silently.
+        return _salary_from_quote(quotes, currency)
+    return low, high, currency
+
+
+def _salary_from_quote(quotes: dict[str, str], currency: str | None) -> _Salary:
+    parsed = parse_salary_phrase(quotes.get(SALARY_QUOTE_KEY), currency)
+    if parsed is None:
+        return None, None, None
+    return parsed.salary_min, parsed.salary_max, parsed.currency
+
+
 def _quotes(role: RoleExtraction, posting: PostingExtraction) -> dict[str, str]:
     # Same fill-down as the values: a role inheriting remote_policy inherits the
     # quote that grounds it, so the stored row stands on its own.
@@ -60,7 +87,14 @@ def _quotes(role: RoleExtraction, posting: PostingExtraction) -> dict[str, str]:
 
 
 def _role(role: RoleExtraction, posting: PostingExtraction, index: int) -> NormalizedRole:
-    salary_min, salary_max, currency = _salary(role, posting)
+    quotes = _quotes(role, posting)
+    fields_band = _salary_from_fields(role, posting)
+    salary_min, salary_max, currency = resolve_salary(*fields_band, quotes)
+    derived = (
+        ["salary_min", "salary_max", "salary_currency"]
+        if (salary_min, salary_max, currency) != fields_band
+        else []
+    )
     return NormalizedRole(
         role_index=index,
         title=role.title,
@@ -73,7 +107,8 @@ def _role(role: RoleExtraction, posting: PostingExtraction, index: int) -> Norma
         salary_max=salary_max,
         salary_currency=currency,
         description=_inherit(role, posting, "description"),
-        source_quotes=_quotes(role, posting),
+        source_quotes=quotes,
+        derived_fields=derived,
     )
 
 

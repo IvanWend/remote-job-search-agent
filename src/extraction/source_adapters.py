@@ -16,7 +16,7 @@ from src.extraction.normalize import (
     seniority_enum,
     to_monthly,
 )
-from src.extraction.schema import DocType
+from src.extraction.schema import DocType, NormalizedPosting, NormalizedRole
 
 # Unambiguous only. Anything needing judgment is doc_type's job, where the
 # mistake is scored instead of invisible.
@@ -179,6 +179,71 @@ def _remotive(raw: dict[str, Any], external_id: str) -> ExtractionInput:
         text=html_to_text(raw.get("description")),
         ground_truth=gt,
     )
+
+
+# Held out at role level. `company` is posting level and handled on its own.
+_GROUND_TRUTH_ROLE_FIELDS = frozenset(
+    {"title", "location", "seniority", "remote_policy", "employment_type", "stack"}
+)
+_SALARY_FIELDS = ("salary_min", "salary_max", "salary_currency")
+# These three default to 'unknown' rather than None, so "empty" is not `is None`.
+_ENUM_FIELDS = frozenset({"seniority", "remote_policy", "employment_type"})
+
+
+def _is_empty(role: NormalizedRole, name: str) -> bool:
+    # A field already derived from somewhere else is still open: the board's own
+    # JSON outranks a figure re-read out of the model's salary quote, and this
+    # keeps that true whichever fill runs first.
+    if name in role.derived_fields:
+        return True
+    value = getattr(role, name)
+    if name in _ENUM_FIELDS:
+        return bool(value == "unknown")
+    return value is None or value == []
+
+
+def apply_ground_truth(posting: NormalizedPosting, truth: GroundTruth) -> NormalizedPosting:
+    """Fill what the board states outright and the model could not have known.
+    Only the posting body reaches the model on Habr, Web3 and Remotive, so a NULL
+    company there means "not written in the body", not "not known" — every field
+    in `held_out` is sitting in the raw JSON unused. Gaps only: a value the model
+    did produce is left alone, and every field taken here is named in the role's
+    `derived_fields` so the eval can still score the model on its own answers."""
+    if posting.doc_type != "posting" or not truth.held_out:
+        return posting
+
+    company, company_filled = posting.company, False
+    if "company" in truth.held_out and company is None and truth.company:
+        company, company_filled = truth.company, True
+
+    roles = []
+    for role in posting.roles:
+        update: dict[str, Any] = {}
+        derived = ["company"] if company_filled else []
+
+        for name in sorted(truth.held_out & _GROUND_TRUTH_ROLE_FIELDS):
+            value = getattr(truth, name)
+            if value in (None, [], "") or not _is_empty(role, name):
+                continue
+            update[name] = value
+            derived.append(name)
+
+        # All three or none: a currency without its band, or a band read off a
+        # source that never stated the period, is worse than the NULL it replaces.
+        if (
+            truth.salary_period_known
+            and set(_SALARY_FIELDS) & truth.held_out
+            and all(_is_empty(role, name) for name in ("salary_min", "salary_max"))
+            and (truth.salary_min is not None or truth.salary_max is not None)
+        ):
+            update.update({name: getattr(truth, name) for name in _SALARY_FIELDS})
+            derived.extend(_SALARY_FIELDS)
+
+        if derived:
+            update["derived_fields"] = sorted({*role.derived_fields, *derived})
+        roles.append(role.model_copy(update=update) if update else role)
+
+    return posting.model_copy(update={"company": company, "roles": roles})
 
 
 def to_extraction_input(source: str, external_id: str, raw_text: str) -> ExtractionInput:

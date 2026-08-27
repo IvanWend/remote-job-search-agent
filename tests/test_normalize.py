@@ -13,7 +13,9 @@ from src.extraction.normalize import (
     fold_homoglyphs,
     html_to_text,
     normalize_stack,
+    parse_salary_phrase,
     remote_policy_enum,
+    salary_band_implausible,
     seniority_enum,
     to_monthly,
     to_number,
@@ -246,3 +248,70 @@ def test_alias(raw: str | None, expected: str | None) -> None:
 )
 def test_normalize_stack(raw: list[str | None], expected: list[str]) -> None:
     assert normalize_stack(raw) == expected
+
+
+@pytest.mark.parametrize(
+    "quote, expected",
+    [
+        # Every phrase here is a source_quotes['salary'] value from the corpus.
+        ("$175,000 - $300,000", (14583, 25000, "USD", "year")),
+        # The multiplier is stated once, on the high bound.
+        ("$300–450K base, 0.35–0.70%", (25000, 37500, "USD", "year")),
+        ("55 - 85k EUR", (4583, 7083, "EUR", "year")),
+        # A dot grouping thousands, a comma grouping thousands, in one phrase.
+        ("$180.000-210,000/year + company equity", (15000, 17500, "USD", "year")),
+        # The code wins over the symbol, or this reads as USD.
+        ("$130,000 – $210,000 CAD", (10833, 17500, "CAD", "year")),
+        ("AU$120–160k", (10000, 13333, "AUD", "year")),
+        ("Зарплата от 220 000 ₽/мес.", (220000, None, "RUB", "month")),
+        ("до 133 000 рублей на руки", (None, 133000, "RUB", "month")),
+        ("💰Вилка: 270-400 т.р (гросс)", (270000, 400000, None, "month")),
+        ("ЗП: 400–550 руб./час", (69332, 95332, "RUB", "hour")),
+        ("Entry Level: $17.50/hr (with advancement opportunities)", (3033, 3033, "USD", "hour")),
+        ("$178,500 USD + equity", (14875, 14875, "USD", "year")),
+        ("$200K USD+", (16667, None, "USD", "year")),
+        ("Compensation: $90k (junior) - $150k (senior)", (7500, 12500, "USD", "year")),
+        ("1. Staff Software Engineer - $200K-275K + equity", (16667, 22917, "USD", "year")),
+    ],
+)
+def test_parse_salary_phrase(quote: str, expected: tuple[Any, ...]) -> None:
+    assert tuple(parse_salary_phrase(quote)) == expected  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "quote",
+    [
+        "$0 + equity",
+        # No period stated and the magnitude fits either — guessing is the one
+        # thing 005 forbids.
+        "$12k–$15k",
+        "Pay is competitive (9-12 LPA)",
+        "Вознаграждение 10-20% с оборота проекта.",
+        "$5 per referral who signs up",
+        "Competitive salary + meaningful equity (2–5% range)",
+        "Compensation: 100% Commission (Uncapped Earning Potential)",
+        # A 28x band is a misread, not a band.
+        "$10–$285K",
+        "",
+        None,
+    ],
+)
+def test_parse_salary_phrase_rejects(quote: str | None) -> None:
+    assert parse_salary_phrase(quote) is None
+
+
+@pytest.mark.parametrize(
+    "low, high, expected",
+    [
+        (14583, 25000, False),
+        (None, 133000, False),
+        (15000, None, False),
+        (None, None, False),
+        # "$300–450K" as the model first stored it: 300 and 450000, both legal.
+        (25, 37500, True),
+        # "$157-181K" with both bounds stripped of their multiplier.
+        (13, 15, True),
+    ],
+)
+def test_salary_band_implausible(low: int | None, high: int | None, expected: bool) -> None:
+    assert salary_band_implausible(low, high) is expected

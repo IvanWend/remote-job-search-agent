@@ -138,6 +138,10 @@ class NormalizedRole(BaseModel):
     salary_currency: str | None = None  # ISO 4217, never converted
     description: str | None = None
     source_quotes: dict[str, str] = {}
+    # Fields whose stored value did not come from the model's own field output —
+    # recovered from its salary quote, or taken from the board's own JSON. The
+    # eval scores the model, so it has to know which fields are not the model's.
+    derived_fields: list[str] = []
 
 
 class NormalizedPosting(BaseModel):
