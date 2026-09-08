@@ -380,7 +380,7 @@ def parse_pipeline_args():
     parser.add_argument("--limit", type=int, default=None, help="Max pending row to process")
 
     parser.add_argument(
-        "--chunk-size", type=int, default=5, help="Default number of chunks to process"
+        "--chunk-size", type=int, default=20, help="Default number of chunks to process"
     )
 
     parser.add_argument(

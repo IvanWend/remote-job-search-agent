@@ -40,31 +40,18 @@ model's own answer.
 
 ## Phase 2 — Extraction + evals
 
-- [x] `src/extraction/normalize.py` — pure helpers, model-free
-- [x] `src/extraction/source_adapters.py` — `(source, external_id, raw_text)` → `ExtractionInput`
-- [x] `src/extraction/schema.py` — four Pydantic models, five grounding validators
-- [x] `src/extraction/transform.py` — fill-down + conversion (see DECISIONS: schema)
-- [x] `tests/test_normalize.py` — parametrized cases over every public function
-- [x] `db/schema/005_structured_postings.sql` (see DECISIONS: storage)
-- [x] `src/extraction/prompt.py` — `SYSTEM_PROMPT`, injected so prompt edits stay a clean diff
-- [x] `src/extraction/pipeline.py` — `pending`, `build_agent`, `extract`, `persist`
-- [x] `src/extraction/pipeline.py` — `run` (chunked gather, serial writes)
-- [x] `src/extraction/pipeline.py` — `main` (argparse, `--dry-run`, wall-clock + `Stats` summary)
-- [x] `db/schema/006_role_description.sql` — per-role `description`, inheritable (see DECISIONS)
-- [x] Langfuse tracing via the `langfuse` v4 SDK, wired in `main` (see DECISIONS: pipeline)
-- [x] Pilot `--limit 20 --source hn` — ran twice, before and after `description`
-- [x] Langfuse model definition for `deepseek-v4-flash` — peak rates (see DECISIONS: pipeline)
-- [x] Full corpus pass over the remaining 1,075 rows
-- [x] `normalize.parse_salary_phrase` — the salary quote as fallback (see DECISIONS: schema)
-- [x] `source_adapters.apply_ground_truth` + `db/schema/007_derived_fields.sql`
-- [x] `src/extraction/backfill.py` — both repairs over the stored corpus, re-runnable
-- [x] `evals/grounding_audit.py` — quote and `description` containment over the whole corpus
-- [x] `tests/test_transform.py`, `tests/test_source_adapters.py` — the two new decisions
-- [ ] Tests for `schema.py` — needs the offline fixtures below
-- [ ] Hand-label `evals/gold_labeled.json`, keyed on `(source, external_id)` (see DECISIONS)
-- [ ] Eval script: per-field accuracy, `doc_type`, role count, role alignment (see DECISIONS)
-- [ ] Iterate the prompt until acceptable accuracy (set the threshold after the first run)
-- [ ] Cache a fixture response per source so the demo path runs offline
+- [x] Extraction modules — `normalize`, `source_adapters`, `schema`, `transform`, `prompt`, plus
+      DDL 005–007: `structured_postings`, per-role `description`, `derived_fields` (see DECISIONS)
+- [x] `src/extraction/pipeline.py` — `pending`/`build_agent`/`extract`/`persist`, chunked `run`,
+      argparse `main`, Langfuse tracing via the v4 SDK (see DECISIONS: pipeline)
+- [x] Corpus pass — `--limit 20 --source hn` pilot, then all 1,098 raw rows → 1,663 roles
+- [x] Repairs + audit — salary-quote fallback, `apply_ground_truth`, `backfill.py` over the stored
+      corpus, `evals/grounding_audit.py`
+- [x] `tests/test_normalize.py`, `tests/test_transform.py`, `tests/test_source_adapters.py`
+- [ ] Offline fixtures — cache a response per source so the demo path runs offline, then tests for
+      `schema.py`
+- [ ] Eval loop — hand-label `evals/gold_labeled.json` on `(source, external_id)`, per-field /
+      `doc_type` / role-alignment script, iterate the prompt to a threshold set after run one
 
 ## Phase 3 — Storage + retrieval
 
