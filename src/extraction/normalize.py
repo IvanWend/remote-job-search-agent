@@ -72,8 +72,14 @@ _SALARY_LOWER_ONLY = re.compile(r"\bfrom\b|\bот\b|starting\s+at|начиная
 
 _SALARY_PERIOD_WORDS = (
     ("hour", re.compile(r"/\s*(?:hr|hour|час)|per\s+hour|an\s+hour|hourly|в\s+час", re.I)),
-    ("month", re.compile(r"/\s*(?:mo|month|мес)|per\s+month|a\s+month|monthly"
-                         r"|в\s+месяц|ежемесячн", re.I)),
+    (
+        "month",
+        re.compile(
+            r"/\s*(?:mo|month|мес)|per\s+month|a\s+month|monthly"
+            r"|в\s+месяц|ежемесячн",
+            re.I,
+        ),
+    ),
     ("year", re.compile(r"/\s*(?:yr|year|год)|per\s+year|a\s+year|annual|в\s+год", re.I)),
 )
 
