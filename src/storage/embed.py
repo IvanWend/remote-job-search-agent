@@ -89,6 +89,10 @@ def embed(texts: list[str]) -> list[list[float]]:
     return embeddings
 
 
+def to_vector_text(vec: list[float]) -> str:
+    return "[" + ",".join(map(str, vec)) + "]"
+
+
 UPSERT_EMBEDDING_SQL = """
 INSERT INTO posting_embeddings (raw_posting_id, role_index, embedding, embedded_text, embedded_at)
 VALUES (%s, %s, %s::vector, %s, now())
@@ -105,7 +109,7 @@ def persist_embeddings(conn, rows: list[tuple[int, int, str, list[float]]]) -> N
     # Tuple order matches the SQL placeholders: embedding (3rd) is the ::vector
     # text, embedded_text (4th) the string. Swap them and a title lands in vector().
     values = [
-        (rid, ridx, "[" + ",".join(map(str, vec)) + "]", text)
+        (rid, ridx, to_vector_text(vec), text)
         for rid, ridx, text, vec in rows
     ]
     with conn.transaction(), conn.cursor() as cur:
