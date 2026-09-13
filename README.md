@@ -6,14 +6,16 @@ embeddings in one database), and answers analytical questions — *"what skills 
 backend roles"*, *"which postings match this résumé"*. Portfolio project; second after
 [cv-tailor-ru](../) (LLM résumé tailoring).
 
-**Status:** ingestion **done**. All four source clients — HN, Remotive, Web3.career, Habr Career —
-plus the idempotent loader and the retention purge are working and verified. The corpus is
-remote-only and kept to a **rolling 90-day window** — **1,098 postings** (HN 502, Habr 460, Web3 100,
-Remotive 36). The eval baseline is frozen (`jobmarket_eval`, read-only role) and the 40-row gold-set
-candidate pool is sampled. **Phase 2 in progress:** the extraction path runs end to end — source
-adapter → LLM → Pydantic validators → normalize/fill-down — across all four sources. Hand-labeling,
-the eval script and Langfuse are next. See
-[docs/ROADMAP.md](docs/ROADMAP.md) for what is built vs. planned.
+**Status:** ingestion **done**, extraction **done**, storage embeddings **done**. All four source
+clients — HN, Remotive, Web3.career, Habr Career — plus the idempotent loader and the retention
+purge are working and verified. The corpus is remote-only and kept to a **rolling 90-day window** —
+**1,098 postings** (HN 502, Habr 460, Web3 100, Remotive 36) → **1,663 structured roles**. The eval
+baseline is frozen (`jobmarket_eval`, read-only role) and the 40-row gold-set candidate pool is
+sampled. **Phase 2 (extraction) is complete:** the extraction path runs end to end — source adapter
+→ LLM → Pydantic validators → normalize/fill-down — across all four sources, traced with Langfuse.
+**Phase 3 (storage) in progress:** local `bge-m3` embeddings (1024-dim) are written for all 1,660
+embeddable roles; `vector_search` (pgvector HNSW + metadata filters), SQL analytics, and the
+Phase 4 agent are next. See [docs/ROADMAP.md](docs/ROADMAP.md) for what is built vs. planned.
 
 **Career signals targeted:** structured LLM extraction from unstructured text, RAG over a
 self-built corpus, agent tool-calling, eval-driven development, LLM observability, containerized
@@ -128,8 +130,8 @@ replaces), so `structured_postings` is 1:N with `raw_postings`. Five validators 
 grounding rules: blank-string coercion, salary coherence, `source_quotes` keys must be real field
 names, required quotes on the fields where the spike fabricated, and the non-posting shape.
 
-**Database schema** (Postgres — `raw_postings`, `structured_postings` and `extraction_runs`
-finalized; `posting_embeddings` draft):
+**Database schema** (Postgres — `raw_postings`, `structured_postings`, `extraction_runs` and
+`posting_embeddings` finalized):
 
 ```sql
 raw_postings (
@@ -151,7 +153,11 @@ extraction_runs (                -- one row per raw posting, success or not
   raw_posting_id FK PK ON DELETE CASCADE, status TEXT CHECK (status IN ('ok','invalid','error')),
   doc_type TEXT, role_count INT, model TEXT, error TEXT, extracted_at TIMESTAMPTZ
 )
-posting_embeddings  ( posting_id FK, embedding vector(384|1024), embedded_text )  -- dim TBD
+posting_embeddings  (
+  raw_posting_id BIGINT, role_index INT, embedding vector(1024), embedded_text TEXT,
+  embedded_at TIMESTAMPTZ, PK (raw_posting_id, role_index),
+  FK → structured_postings (raw_posting_id, role_index) ON DELETE CASCADE
+)
 ```
 
 Two tables, not one, because a non-posting extracts *successfully* into **zero** role rows — a
@@ -282,7 +288,7 @@ pyproject.toml         # deps (uv) + ruff/mypy/pytest config; uv.lock is committ
 .env.example           # committed key names, no values; .env is git-ignored
 .gitattributes         # force LF (files cross into the Linux Postgres container)
 docker-compose.yml     # Postgres 17 + pgvector, healthcheck, pgdata volume, ./init mount
-db/schema/             # numbered, re-runnable DDL (001 raw_postings … 005 structured_postings)
+db/schema/             # numbered, re-runnable DDL (001 raw_postings … 008 posting_embeddings)
 init/                  # first-boot bootstrap only — vector + pg_trgm
 src/
   ingestion/
@@ -300,8 +306,13 @@ src/
     transform.py       # fill-down + conversion: PostingExtraction -> NormalizedPosting
     prompt.py          # SYSTEM_PROMPT only — kept apart so prompt edits are a clean diff
     pipeline.py        # resume query, agent, extract -> transform -> persist. The only DB writer.
+    backfill.py        # gap-fill repair over stored rows (salary quote + board ground truth)
+  storage/
+    embed.py           # build_text → Ollama bge-m3 → posting_embeddings (text::vector)
 tests/
-  test_normalize.py    # parametrized unit tests over normalize.py's ten public functions
+  test_normalize.py    # parametrized tables over normalize.py's public helpers
+  test_transform.py    # resolve_salary: field band vs. quote fallback
+  test_source_adapters.py # apply_ground_truth gap-fill (real Habr row)
 evals/
   generate_gold_dataset.py  # seeded 40-row gold-set sample from the frozen snapshot
   snapshots/                # frozen dumps — eval inputs, committed
@@ -314,9 +325,8 @@ directory is empty) and `db/schema/` is the **re-runnable** path applied by hand
 both — see the 2026-07-26 decision in the roadmap. Inside `extraction/` the imports run **one way**:
 `normalize` knows nothing about the models, `schema` and `source_adapters` import `normalize`, and
 `transform` imports both. That is why fill-down lives in its own module instead of in `normalize.py`
-— it keeps the helpers testable off plain strings. There is no `tests/` yet, and the project is
-intentionally not an installable package (no `[build-system]`), so imports are `src.ingestion.…`
-from the repo root.
+— it keeps the helpers testable off plain strings. The project is intentionally not an installable
+package (no `[build-system]`), so imports are `src.…` from the repo root.
 
 ## Scope
 

@@ -14,18 +14,13 @@ STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  
 AGENT        DeepSeek tool-calling loop: sql_query · vector_search · resume_match
 SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
 
-## Current state (2026-09-09)
+## Current state (2026-09-13)
 
-Phase 3 storage. Phase 2 (extraction) is complete — 1,098 raw rows → 1,663 structured roles. The
-embedding pipeline (`src/storage/embed.py`) is done and verified: it reads the roles, builds an
-embed text (`title:` + `seniority:` skipping `unknown` + `stack:` skipping empty + bare
-`description`, newline-joined), embeds locally with `bge-m3` (1024-dim, verified live), and upserts
-into `posting_embeddings` keyed on `(raw_posting_id, role_index)`. Full pass: **1,660 vectors
-written, 3 skipped** — the three roles with no title/stack/description, whose `build_text` returns
-`None`.
-
-The vector crosses the psycopg boundary as `text::vector`, not numpy (see DECISIONS: storage). The
-HNSW cosine index is deferred to `vector_search`, next.
+Phase 3 storage complete. Phase 2 extraction (1,098 raw → 1,663 roles) feeds four storage modules,
+all verified against the live corpus: `embed.py` (bge-m3, 1,660 vectors / 3 empty-text skipped),
+`vector_search.py` (HNSW cosine index + `::vector` read path + seniority/remote filters),
+`analytics.py` (skill frequency, salary distributions), `rollups.py` (monthly skill + salary
+aggregates that outlive the purge). Toolchain gate green (130 tests).
 
 ## Phase 1 — Ingestion
 
@@ -54,9 +49,9 @@ HNSW cosine index is deferred to `vector_search`, next.
 
 - [x] Model — bge-m3 at 1024-dim (verified live)
 - [x] Embedding pipeline — `embed.py`: `title + seniority + stack + description`, `text::vector` cast (DECISIONS: storage)
-- [ ] pgvector search + basic metadata filters (seniority, remote)
-- [ ] SQL analytics queries (skill frequency, salary distributions) — hand-written
-- [ ] Monthly rollups so trends survive the purge (see DECISIONS: storage)
+- [x] pgvector search + basic metadata filters (seniority, remote) — `vector_search.py`, HNSW index (009)
+- [x] SQL analytics queries (skill frequency, salary distributions) — hand-written — `analytics.py`
+- [x] Monthly rollups so trends survive the purge (see DECISIONS: storage) — `rollups.py` + DDL 010
 
 ## Phase 4 — Agent
 
@@ -73,7 +68,6 @@ HNSW cosine index is deferred to `vector_search`, next.
 
 ## Next
 
-1. pgvector `vector_search` — HNSW cosine index + metadata filters
-2. DeepSeek tool-calling loop, three tools
-3. FastAPI + SSE
-4. Then label the gold set and write the eval script
+1. DeepSeek tool-calling loop, three tools (`sql_query` / `vector_search` / `resume_match`)
+2. FastAPI + SSE
+3. Then label the gold set and write the eval script
