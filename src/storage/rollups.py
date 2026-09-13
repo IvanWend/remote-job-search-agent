@@ -26,17 +26,21 @@ ON CONFLICT (month, skill) DO UPDATE
   SET roles = EXCLUDED.roles, postings = EXCLUDED.postings
 """
 
-# Grouped by (month, currency) so percentiles never mix currencies. NULL
-# currency is coalesced to a sentinel because NULLs in a PRIMARY KEY never
-# conflict with each other — two NULL-currency rows for one month would both
-# insert instead of upserting.
+# Grouped by (month, currency) so percentiles never mix currencies — the one
+# exception is the 'unknown' bucket, which by definition mixes whatever the
+# sources never stated, so its medians are FILTER'd to NULL. NULL currency is
+# coalesced to that sentinel because NULLs in a PRIMARY KEY never conflict with
+# each other — two NULL-currency rows for one month would both insert instead
+# of upserting.
 SALARY_ROLLUP_SQL = """
 INSERT INTO monthly_salary (month, currency, n, median_min, median_max)
 SELECT date_trunc('month', r.posted_at)::date,
        COALESCE(s.salary_currency, 'unknown'),
        count(*),
-       percentile_cont(0.5) WITHIN GROUP (ORDER BY s.salary_min)::int,
-       percentile_cont(0.5) WITHIN GROUP (ORDER BY s.salary_max)::int
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY s.salary_min)
+           FILTER (WHERE s.salary_currency IS NOT NULL)::int,
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY s.salary_max)
+           FILTER (WHERE s.salary_currency IS NOT NULL)::int
 FROM structured_postings s
 JOIN raw_postings r ON r.id = s.raw_posting_id
 WHERE s.salary_max IS NOT NULL

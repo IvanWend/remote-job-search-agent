@@ -15,6 +15,11 @@ EMBED_MODEL = "bge-m3"
 EMBED_DIM = 1024
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 
+# bge-m3 retrieval is asymmetric: the query carries this instruction, the stored
+# role text (build_text) carries none. FlagEmbedding's shipped pattern for
+# short-query -> long-passage search; documents stay un-prefixed.
+QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
+
 
 class Role(NamedTuple):
     raw_posting_id: int

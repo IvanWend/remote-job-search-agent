@@ -40,10 +40,14 @@ ORDER BY roles DESC, skill
 LIMIT %(limit)s
 """
 
+# NULL currency is a mix of whatever currencies the source never stated, so a
+# median across it is neither currency. FILTER keeps the row (n = coverage)
+# while withholding a number that cannot mean anything.
 SALARY_BY_CURRENCY_SQL = """
 SELECT salary_currency,
        count(*) AS n,
-       percentile_cont(0.5) WITHIN GROUP (ORDER BY salary_max)::int AS median_max_monthly
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY salary_max)
+           FILTER (WHERE salary_currency IS NOT NULL)::int AS median_max_monthly
 FROM structured_postings
 WHERE salary_max IS NOT NULL
 GROUP BY 1
