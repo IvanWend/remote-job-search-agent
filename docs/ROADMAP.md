@@ -14,13 +14,13 @@ STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  
 AGENT        DeepSeek tool-calling loop: sql_query · vector_search · resume_match
 SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
 
-## Current state (2026-09-13)
+## Current state (2026-09-14)
 
-Phase 3 storage complete. Phase 2 extraction (1,098 raw → 1,663 roles) feeds four storage modules,
-all verified against the live corpus: `embed.py` (bge-m3, 1,660 vectors / 3 empty-text skipped),
-`vector_search.py` (HNSW cosine index + `::vector` read path + seniority/remote filters),
-`analytics.py` (skill frequency, salary distributions), `rollups.py` (monthly skill + salary
-aggregates that outlive the purge). Toolchain gate green (130 tests).
+Phase 4 (agent) started. Phase 3 storage complete and verified (1,098 raw → 1,663 roles → 1,660
+vectors): `embed.py` (bge-m3), `vector_search.py` (HNSW cosine + `::vector` read path + filters),
+`analytics.py` (skill/salary shapes), `rollups.py` (monthly aggregates outliving the purge). First
+agent tool `sql_query` written + verified (named-query menu over the analytics shapes, see DECISIONS:
+agent); `vector_search` and `resume_match` remain, then the DeepSeek loop, the eval suite, FastAPI + SSE.
 
 ## Phase 1 — Ingestion
 
@@ -55,7 +55,7 @@ aggregates that outlive the purge). Toolchain gate green (130 tests).
 
 ## Phase 4 — Agent
 
-- [ ] Tools: `sql_query` (whitelisted), `vector_search`, `resume_match`
+- [ ] Tools: `sql_query` (done), `vector_search`, `resume_match`
 - [ ] Agent loop with DeepSeek tool-calling
 - [ ] Agent eval suite (~15 canned questions) — must run against the snapshot
 - [ ] FastAPI endpoint with SSE streaming
