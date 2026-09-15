@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+from collections.abc import Sequence
 from typing import NamedTuple
 
 import psycopg
@@ -53,13 +54,17 @@ LIMIT %(limit)s
 """
 
 
+# seniority/remote are Sequence, not list: list is invariant, so the agent
+# tool's constrained type (list[Literal[...]]) would not assign to list[str].
+# Sequence is covariant and accepts it; the runtime value is always a list,
+# which is what psycopg adapts to text[].
 def search(
     conn,
     qvec_text: str,
     *,
     limit: int,
-    seniority: list[str] | None = None,
-    remote: list[str] | None = None,
+    seniority: Sequence[str] | None = None,
+    remote: Sequence[str] | None = None,
 ) -> list[SearchHit]:
     with conn.cursor() as cur:
         cur.execute(
@@ -74,8 +79,8 @@ def run(
     query: str,
     *,
     limit: int = 10,
-    seniority: list[str] | None = None,
-    remote: list[str] | None = None,
+    seniority: Sequence[str] | None = None,
+    remote: Sequence[str] | None = None,
 ) -> list[SearchHit]:
     vec = embed([QUERY_INSTRUCTION + query])[0]
     return search(conn, to_vector_text(vec), limit=limit, seniority=seniority, remote=remote)

@@ -1,7 +1,8 @@
 from collections.abc import Callable
 from typing import Any, Literal, assert_never
 
-from src.storage import analytics
+from src.storage import analytics, role
+from src.storage.vector_search import run
 
 # The whitelist is the type: the model can only name one of these three, and
 # pydantic-ai rejects anything else before it reaches this function. No SQL
@@ -40,3 +41,54 @@ def make_sql_query(conn) -> Callable[..., list[dict[str, Any]]]:
         assert_never(query)
 
     return sql_query
+
+
+def make_vector_search(conn) -> Callable[..., list[dict[str, Any]]]:
+    # Closure, not a conn param: a conn in the signature would leak into the tool
+    # schema the model sees. The build is pure (no conn use) — the contract test
+    # passes a dummy object to prove it.
+    def vector_search(
+        query: str,
+        *,
+        limit: int = 10,
+        seniority: list[Literal["intern", "junior", "mid", "senior", "staff+"]] | None = None,
+        remote: list[Literal["remote", "hybrid", "onsite"]] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Search roles by semantic similarity to a query.
+
+        Hits are ranked by cosine similarity, higher = closer (max 1.0). Salary
+        figures are monthly in their source currency, never converted. `stack`
+        is a list of skills. Report similarity when asked which jobs are closest.
+
+        Args:
+            query: Free-text query, embedded and matched against role text.
+            limit: Maximum number of hits to return.
+            seniority: Restrict to these seniority levels; omit to search all.
+            remote: Restrict to these remote policies; omit to search all.
+        """
+        hits = run(conn, query, limit=limit, seniority=seniority, remote=remote)
+        return [r._asdict() for r in hits]
+
+    return vector_search
+
+
+def make_role_detail(conn) -> Callable[..., dict[str, Any] | None]:
+    # Closure, not a conn param: a conn in the signature would leak into the tool
+    # schema the model sees. The build is pure (no conn use) — the contract test
+    # passes a dummy object to prove it.
+    def role_detail(raw_posting_id: int, role_index: int) -> dict[str, Any] | None:
+        """Fetch one role's full record by key.
+
+        The key (raw_posting_id, role_index) comes from a vector_search hit, not
+        the internal `id` column. `source_quotes` holds the verbatim text grounding
+        each field. Salary figures are monthly in the role's own currency, never
+        converted.
+
+        Args:
+            raw_posting_id: The posting id, as returned by a vector_search hit.
+            role_index: Which role within that posting.
+        """
+        hit = role.role_detail(conn, raw_posting_id, role_index)
+        return hit._asdict() if hit is not None else None
+
+    return role_detail
