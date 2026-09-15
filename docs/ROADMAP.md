@@ -14,13 +14,15 @@ STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  
 AGENT        DeepSeek tool-calling loop: sql_query · vector_search · resume_match
 SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
 
-## Current state (2026-09-14)
+## Current state (2026-09-15)
 
-Phase 4 (agent) started. Phase 3 storage complete and verified (1,098 raw → 1,663 roles → 1,660
+Phase 4 (agent) in progress. Phase 3 storage complete and verified (1,098 raw → 1,663 roles → 1,660
 vectors): `embed.py` (bge-m3), `vector_search.py` (HNSW cosine + `::vector` read path + filters),
-`analytics.py` (skill/salary shapes), `rollups.py` (monthly aggregates outliving the purge). First
-agent tool `sql_query` written + verified (named-query menu over the analytics shapes, see DECISIONS:
-agent); `vector_search` and `resume_match` remain, then the DeepSeek loop, the eval suite, FastAPI + SSE.
+`analytics.py` (skill/salary shapes), `rollups.py` (monthly aggregates outliving the purge). All
+three agent tools written + verified (see DECISIONS: agent): `sql_query` (named-query menu over the
+analytics shapes), `vector_search` (semantic search over `vector_search.run`), `role_detail` (full
+record + `source_quotes` by `(raw_posting_id, role_index)`; `resume_match` paused). Remaining: the
+DeepSeek tool-calling loop, the eval suite, FastAPI + SSE.
 
 ## Phase 1 — Ingestion
 
@@ -55,7 +57,7 @@ agent); `vector_search` and `resume_match` remain, then the DeepSeek loop, the e
 
 ## Phase 4 — Agent
 
-- [ ] Tools: `sql_query` (done), `vector_search`, `resume_match`
+- [x] Tools: `sql_query`, `vector_search`, `role_detail` (`resume_match` → `role_detail`)
 - [ ] Agent loop with DeepSeek tool-calling
 - [ ] Agent eval suite (~15 canned questions) — must run against the snapshot
 - [ ] FastAPI endpoint with SSE streaming
@@ -68,6 +70,6 @@ agent); `vector_search` and `resume_match` remain, then the DeepSeek loop, the e
 
 ## Next
 
-1. DeepSeek tool-calling loop, three tools (`sql_query` / `vector_search` / `resume_match`)
-2. FastAPI + SSE
-3. Then label the gold set and write the eval script
+1. DeepSeek tool-calling loop, three tools (`sql_query` / `vector_search` / `role_detail`)
+2. Agent eval suite (~15 canned questions) against the snapshot
+3. FastAPI + SSE
