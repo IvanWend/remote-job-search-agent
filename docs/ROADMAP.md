@@ -14,15 +14,17 @@ STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  
 AGENT        DeepSeek tool-calling loop: sql_query · vector_search · resume_match
 SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
 
-## Current state (2026-09-15)
+## Current state (2026-09-22)
 
-Phase 4 (agent) in progress. Phase 3 storage complete and verified (1,098 raw → 1,663 roles → 1,660
-vectors): `embed.py` (bge-m3), `vector_search.py` (HNSW cosine + `::vector` read path + filters),
-`analytics.py` (skill/salary shapes), `rollups.py` (monthly aggregates outliving the purge). All
-three agent tools written + verified (see DECISIONS: agent): `sql_query` (named-query menu over the
-analytics shapes), `vector_search` (semantic search over `vector_search.run`), `role_detail` (full
-record + `source_quotes` by `(raw_posting_id, role_index)`; `resume_match` paused). Remaining: the
-DeepSeek tool-calling loop, the eval suite, FastAPI + SSE.
+Phase 4 (agent) in progress — the tool-calling loop is done; the eval suite is next. Phase 3 storage
+complete and verified (1,098 raw → 1,663 roles → 1,660 vectors): `embed.py` (bge-m3), `vector_search.py`
+(HNSW cosine + `::vector` read path + filters), `analytics.py` (skill/salary shapes), `rollups.py`
+(monthly aggregates outliving the purge). Three agent tools written + verified (see DECISIONS: agent),
+plus the DeepSeek loop (`src/agent/loop.py`): `build_agent` registers the three closures as tools and
+returns `Agent[None, Answer]` (`output_type=Answer`, structured not free text), `ask` runs under
+`ToolManager.parallel_execution_mode("sequential")` with `temperature=0`, `main` is the CLI. Live smoke
+confirmed `vector_search` → `role_detail` → quoted answer composes. Remaining: the eval suite (~15
+canned questions), FastAPI + SSE.
 
 ## Phase 1 — Ingestion
 
@@ -58,7 +60,7 @@ DeepSeek tool-calling loop, the eval suite, FastAPI + SSE.
 ## Phase 4 — Agent
 
 - [x] Tools: `sql_query`, `vector_search`, `role_detail` (`resume_match` → `role_detail`)
-- [ ] Agent loop with DeepSeek tool-calling
+- [x] Agent loop with DeepSeek tool-calling (`output_type=Answer`, sequential tool execution)
 - [ ] Agent eval suite (~15 canned questions) — must run against the snapshot
 - [ ] FastAPI endpoint with SSE streaming
 
@@ -70,6 +72,6 @@ DeepSeek tool-calling loop, the eval suite, FastAPI + SSE.
 
 ## Next
 
-1. DeepSeek tool-calling loop, three tools (`sql_query` / `vector_search` / `role_detail`)
-2. Agent eval suite (~15 canned questions) against the snapshot
-3. FastAPI + SSE
+1. Agent eval suite (~15 canned questions) against the snapshot — decide "rank skills" grading (4th
+   tool vs reframe) and `evidence` semantics first (see DECISIONS: agent)
+2. FastAPI + SSE
