@@ -10,6 +10,7 @@ from src.storage.embed import EMBED_DIM
 
 load_dotenv()
 
+
 # The tool wraps vector_search.run, which embeds the query over Ollama. The
 # execution tests patch embed with a constant non-zero vector (zero would make
 # pgvector's cosine distance undefined) so they run against the frozen snapshot
@@ -144,10 +145,7 @@ def test_vector_search_shape(eval_conn, monkeypatch) -> None:
         assert set(r) == _SEARCH_HIT_KEYS
     # SEARCH_SQL orders by cosine distance ascending, so similarity is
     # non-increasing across the result.
-    assert all(
-        rows[i]["similarity"] >= rows[i + 1]["similarity"]
-        for i in range(len(rows) - 1)
-    )
+    assert all(rows[i]["similarity"] >= rows[i + 1]["similarity"] for i in range(len(rows) - 1))
 
 
 def test_vector_search_seniority_filter(eval_conn, monkeypatch) -> None:
