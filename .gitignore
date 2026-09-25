@@ -9,7 +9,6 @@ __pycache__/
 # Local-only notes — deliberately not shared. docs/ROADMAP.md stays tracked;
 # a bare `docs/` here would exclude it, and gitignore cannot re-include a file
 # whose parent directory is excluded.
-CLAUDE.md
 docs/DECISIONS.md
 docs/GOTCHAS.md
 docs/PROMPT.md
@@ -27,8 +26,6 @@ experiments/*
 .pytest_cache/
 
 # IDE / OS
-.claude/settings.local.json
-.claude/settings.json
 .vscode/
 .idea/
 Thumbs.db
