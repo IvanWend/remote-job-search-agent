@@ -11,20 +11,20 @@ INGESTION    HN (Algolia) + Remotive + Web3.career + Habr Career ──►  raw_
 RETENTION    rolling 90-day window — filtered at ingest, purged on age
 EXTRACTION   LLM + Pydantic schema, grounded by verbatim quotes ──►  structured_postings
 STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  posting_embeddings
-AGENT        DeepSeek tool-calling loop: sql_query · vector_search · resume_match
+AGENT        DeepSeek tool-calling loop: sql_query · vector_search · role_detail
 SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
 
-## Current state (2026-09-22)
+## Current state (2026-09-26)
 
-Phase 4 (agent) in progress — the tool-calling loop is done; the eval suite is next. Phase 3 storage
-complete and verified (1,098 raw → 1,663 roles → 1,660 vectors): `embed.py` (bge-m3), `vector_search.py`
-(HNSW cosine + `::vector` read path + filters), `analytics.py` (skill/salary shapes), `rollups.py`
-(monthly aggregates outliving the purge). Three agent tools written + verified (see DECISIONS: agent),
-plus the DeepSeek loop (`src/agent/loop.py`): `build_agent` registers the three closures as tools and
-returns `Agent[None, Answer]` (`output_type=Answer`, structured not free text), `ask` runs under
-`ToolManager.parallel_execution_mode("sequential")` with `temperature=0`, `main` is the CLI. Live smoke
-confirmed `vector_search` → `role_detail` → quoted answer composes. Remaining: the eval suite (~15
-canned questions), FastAPI + SSE.
+Phase 4 (agent) complete — the DeepSeek tool-calling loop and the FastAPI + SSE serving layer are
+both done and smoke-tested live. Phase 3 storage complete and verified (1,098 raw → 1,663 roles →
+1,660 vectors): `embed.py` (bge-m3), `vector_search.py` (HNSW cosine + `::vector` read path +
+filters), `analytics.py` (skill/salary shapes), `rollups.py` (monthly aggregates outliving the
+purge). The agent exposes `sql_query` / `vector_search` / `role_detail` as closures over a per-run
+conn (see DECISIONS: agent) and runs under `ToolManager.parallel_execution_mode("sequential")` with
+`temperature=0`. Serving is `src/serving/app.py` — `GET`/`POST /ask` stream SSE events
+(`tool_call` → `tool_result` → `answer`) plus `/health` (see DECISIONS: serving). Remaining: the
+agent eval suite (~15 canned questions) against the snapshot, then Phase 5 polish.
 
 ## Phase 1 — Ingestion
 
@@ -62,7 +62,7 @@ canned questions), FastAPI + SSE.
 - [x] Tools: `sql_query`, `vector_search`, `role_detail` (`resume_match` → `role_detail`)
 - [x] Agent loop with DeepSeek tool-calling (`output_type=Answer`, sequential tool execution)
 - [ ] Agent eval suite (~15 canned questions) — must run against the snapshot
-- [ ] FastAPI endpoint with SSE streaming
+- [x] FastAPI endpoint with SSE streaming
 
 ## Phase 5 — Polish
 
@@ -72,6 +72,5 @@ canned questions), FastAPI + SSE.
 
 ## Next
 
-1. Agent eval suite (~15 canned questions) against the snapshot — decide "rank skills" grading (4th
-   tool vs reframe) and `evidence` semantics first (see DECISIONS: agent)
-2. FastAPI + SSE
+1. Agent eval suite (~15 canned questions) against the snapshot — corpus-wide ranking via
+   `skill_frequency` (no 4th tool); `evidence` graded as cited tool output (see DECISIONS: agent)
