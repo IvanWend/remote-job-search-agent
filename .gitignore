@@ -25,6 +25,11 @@ experiments/*
 .mypy_cache/
 .pytest_cache/
 
+# Build artifacts (once the package is installable)
+dist/
+build/
+*.egg-info/
+
 # IDE / OS
 .vscode/
 .idea/
