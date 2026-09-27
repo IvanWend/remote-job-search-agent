@@ -1,18 +1,9 @@
 # Roadmap
 
-The **service / infrastructure** half of my AI-engineering portfolio, built one phase at a time.
+A **remote job search agent over heterogeneous boards.**
 
 **Maintenance rule.** Current state is rewritten from scratch each session, not appended to.
-Decisions go in DECISIONS.md, traps in GOTCHAS.md. Nothing here restates what the code says.
-
-## How it works
-
-INGESTION    HN (Algolia) + Remotive + Web3.career + Habr Career ──►  raw_postings (Postgres)
-RETENTION    rolling 90-day window — filtered at ingest, purged on age
-EXTRACTION   LLM + Pydantic schema, grounded by verbatim quotes ──►  structured_postings
-STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  posting_embeddings
-AGENT        DeepSeek tool-calling loop: sql_query · vector_search · role_detail
-SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
+Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Current state (2026-09-26)
 
