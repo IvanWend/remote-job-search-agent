@@ -6,13 +6,15 @@ __pycache__/
 # Secrets — .env.example is committed, .env never is
 .env
 
-# Local-only notes — deliberately not shared. docs/ROADMAP.md stays tracked;
-# a bare `docs/` here would exclude it, and gitignore cannot re-include a file
-# whose parent directory is excluded.
+# Local-only notes and editor config — deliberately not shared. docs/ROADMAP.md
+# stays tracked; a bare `docs/` here would exclude it, and gitignore cannot
+# re-include a file whose parent directory is excluded.
 docs/DECISIONS.md
 docs/GOTCHAS.md
 docs/PROMPT.md
 docs/DB_*.md
+AGENTS.md
+opencode.json
 
 # Ingested data / gold-set working copies
 evals/candidates_*.json
