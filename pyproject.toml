@@ -1,7 +1,7 @@
 [project]
-name = "jobmarket"
+name = "remote-job-search-agent"
 version = "0.1.0"
-description = "Job-market intelligence agent: ingest postings, LLM structured extraction, Postgres + pgvector, DeepSeek agent."
+description = "Remote-job-search intelligence agent: ingest postings, LLM structured extraction, Postgres + pgvector, DeepSeek agent."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -44,6 +44,7 @@ disallow_untyped_defs = false
 [dependency-groups]
 dev = [
     "mypy>=2.3.0",
+    "pre-commit>=4.6.2",
     "pytest>=9.1.1",
     "ruff>=0.16.0",
     "types-beautifulsoup4>=4.12.0.20250516",
