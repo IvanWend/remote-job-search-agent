@@ -8,7 +8,6 @@ class Answer(BaseModel):
     evidence: list[str] = Field(
         default_factory=list,
         description=(
-            "Tool-derived citations backing the answer — role + stack + source; "
-            "empty when none."
+            "Tool-derived citations backing the answer — role + stack + source; empty when none."
         ),
     )
