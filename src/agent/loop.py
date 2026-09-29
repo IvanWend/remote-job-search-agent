@@ -20,7 +20,15 @@ def build_agent(
     model: str = "deepseek:deepseek-v4-flash", conn=None, system_prompt: str = SYSTEM_PROMPT
 ) -> Agent[None, Answer]:
     tools = [make_sql_query(conn), make_vector_search(conn), make_role_detail(conn)]
-    return Agent(model=model, tools=tools, system_prompt=system_prompt, output_type=Answer)
+    # defer_model_check skips infer_model (and its API-key lookup) until the first
+    # ask()/run. CI and the offline contract test construct an agent with no key.
+    return Agent(
+        model=model,
+        tools=tools,
+        system_prompt=system_prompt,
+        output_type=Answer,
+        defer_model_check=True,
+    )
 
 
 async def ask(agent: Agent[None, Answer], question: str) -> AgentRunResult[Answer]:

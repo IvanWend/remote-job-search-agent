@@ -13,7 +13,7 @@ from src.serving.sse import sse_event, stream_answer
 
 load_dotenv()
 
-url = os.environ["DATABASE_URL"]
+url = os.environ.get("DATABASE_URL")
 
 
 class AskRequest(BaseModel):
@@ -21,6 +21,8 @@ class AskRequest(BaseModel):
 
 
 def _connect() -> psycopg.Connection:
+    if not url:
+        raise ValueError("DATABASE_URL is not set")
     return psycopg.connect(url)
 
 

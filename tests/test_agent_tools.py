@@ -79,7 +79,10 @@ def test_sql_query_schema_contract() -> None:
 
 @pytest.fixture(scope="module")
 def eval_conn():
-    with psycopg.connect(os.environ["EVAL_DATABASE_URL"]) as conn:
+    db_url = os.environ.get("EVAL_DATABASE_URL")
+    if not db_url:
+        pytest.skip("EVAL_DATABASE_URL unset")
+    with psycopg.connect(db_url) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT role FROM db_meta")
             row = cur.fetchone()
