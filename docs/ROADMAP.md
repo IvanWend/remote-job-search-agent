@@ -5,20 +5,10 @@ A **remote job search agent over heterogeneous boards.**
 **Maintenance rule.** Current state is rewritten from scratch each session, not appended to.
 Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
-## Current state (2026-09-27)
+## Current state (2026-09-29)
 
-Phase 4 (agent) complete — the DeepSeek tool-calling loop and the FastAPI + SSE serving layer are
-both done and smoke-tested live. Phase 3 storage complete and verified (1,098 raw → 1,663 roles →
-1,660 vectors): `embed.py` (bge-m3), `vector_search.py` (HNSW cosine + `::vector` read path +
-filters), `analytics.py` (skill/salary shapes), `rollups.py` (monthly aggregates outliving the
-purge). The agent exposes `sql_query` / `vector_search` / `role_detail` as closures over a per-run
-conn (see DECISIONS: agent) and runs under `ToolManager.parallel_execution_mode("sequential")` with
-`temperature=0`. Serving is `src/serving/app.py` — `GET`/`POST /ask` stream SSE events
-(`tool_call` → `tool_result` → `answer`) plus `/health` (see DECISIONS: serving). Remaining: the
-agent eval suite (~15 canned questions) against the snapshot, then Phase 5 polish.
-
-A distribution & ops plan (MCP server, deployment, frontend, CI) is drafted in `docs/PLAN.md` —
-tracked under Phase 6 below.
+- **Phase: 5 — Distribution & ops.** CI is in. Phases 1–4 complete. Next is the MCP server, then
+  frontend, then deployment. The agent eval suite stays deferred to deployment. Plan: `docs/PLAN.md`.
 
 ## Phase 1 — Ingestion
 
@@ -55,28 +45,28 @@ tracked under Phase 6 below.
 
 - [x] Tools: `sql_query`, `vector_search`, `role_detail` (`resume_match` → `role_detail`)
 - [x] Agent loop with DeepSeek tool-calling (`output_type=Answer`, sequential tool execution)
-- [ ] Agent eval suite (~15 canned questions) — must run against the snapshot
+- [ ] Agent eval suite (~15 canned questions) — deferred to Phase 5 deployment (baseline
+      before/after the provider/model swap)
 - [x] FastAPI endpoint with SSE streaming
 
-## Phase 5 — Polish
+## Phase 5 — Distribution & ops
+
+- [x] CI — `.github/workflows/ci.yml` (ruff + mypy + pytest; 7 DB tests skipped via missing
+      `EVAL_DATABASE_URL`); `app.py` / `build_agent` import without env (see docs/PLAN.md)
+- [ ] MCP server — `src/mcp/server.py` (FastMCP), 3 granular tools over the existing closures,
+      stdio transport, direct DB (no DeepSeek key)
+- [ ] Frontend — React + Vite + Tailwind SPA, served from FastAPI `StaticFiles`
+- [ ] Deployment — single VPS + extended docker-compose (`web` + `ollama`, CPU host);
+      provider + budget TBD; run the agent eval baseline before/after the provider/model swap
+
+## Phase 6 — Polish
 
 - [ ] README with architecture diagram, eval-results table, demo GIF
 - [ ] Cross-source dedup (fuzzy company+title), trend charts
 - [ ] Hand-roll the validate-and-retry loop to see what `pydantic-ai` hides (see DECISIONS)
 
-## Phase 6 — Distribution & ops
-
-- [ ] CI — `.github/workflows/ci.yml` (ruff + mypy + pytest; 7 DB tests skipped via missing
-      `EVAL_DATABASE_URL`); make `app.py` / `build_agent` import-safe without env (see docs/PLAN.md)
-- [ ] MCP server — `src/mcp/server.py` (FastMCP), 3 granular tools over the existing closures,
-      stdio transport, direct DB (no DeepSeek key)
-- [ ] Frontend — React + Vite + Tailwind SPA, served from FastAPI `StaticFiles`
-- [ ] Deployment — single VPS + extended docker-compose (`web` + `ollama`, CPU host);
-      provider + budget TBD
-
 ## Next
 
-1. CI first — `.github/workflows/ci.yml` + the two env-robustness edits (`app.py` DATABASE_URL
-   guard, `build_agent` defer model check) — it guards everything else.
-2. Then MCP server (`src/mcp/`) → frontend (`frontend/`) → deployment, per `docs/PLAN.md`.
+1. MCP server (`src/mcp/`) — 3 tools over the existing closures, stdio, no DeepSeek key.
+2. Then frontend (`frontend/`) → deployment, per `docs/PLAN.md`.
 3. Decide hosting provider + budget before deployment; CPU host for Ollama is settled.
