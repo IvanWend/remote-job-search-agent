@@ -13,6 +13,7 @@ RETENTION    rolling 90-day window — filtered at ingest, purged on age
 EXTRACTION   LLM + Pydantic schema, grounded by verbatim quotes ──►  structured_postings
 STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  posting_embeddings
 AGENT        DeepSeek tool-calling loop: sql_query · vector_search · role_detail
+MCP          same three tools over stdio — no DeepSeek key
 SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
 ```
 
@@ -31,6 +32,7 @@ filled. Schema and extraction rules live in `db/schema/` and `src/extraction/`, 
 | HTML parsing | BeautifulSoup 4 — Habr description bodies |
 | Database | Postgres 17 + pgvector |
 | API | FastAPI, SSE streaming |
+| MCP | FastMCP stdio — same three tools, no DeepSeek key |
 | Tracing | Langfuse (self-hosted, Docker) |
 | Orchestration | Docker Compose |
 | Testing / evals | pytest + custom eval scripts + gold-set JSON |
@@ -69,6 +71,7 @@ uv run python -m src.storage.embed              # needs Ollama at OLLAMA_BASE_UR
 uv run python -m src.storage.rollups
 uv run python -m src.agent.loop -q "what skills show up most for senior backend roles?"
 uv run uvicorn src.serving.app:app
+uv run python -m src.mcp.server             # stdio; silence means it is waiting
 ```
 
 The first Habr ingest is slow (one HTML request per posting). Later runs fetch only new ids.
@@ -100,6 +103,38 @@ If `docker compose up` cannot bind 5432, a Windows Postgres service owns the por
 (`Get-Service *postgres*` in an elevated PowerShell). If Ollama is on the Windows host, reach it at
 `localhost:11434` and keep globs out of `no_proxy`.
 
+## MCP
+
+Any MCP client (Cursor, VS Code, or another agent runtime) can call the same three
+tools directly. The process does not use DeepSeek — the host is the model. `vector_search` still
+embeds through Ollama, so `OLLAMA_BASE_URL` must be reachable.
+
+Do not rely on `.env`. The host's working directory is not the repo, so `load_dotenv()` will
+not find it. Put `DATABASE_URL` and `OLLAMA_BASE_URL` in the config's `env` block (values from
+`.env`; no `DEEPSEEK_API_KEY`). Paths must be absolute. Restart the host after editing its config.
+
+Each host has its own config location — `.cursor/mcp.json` or `.vscode/mcp.json` in the repo,
+a desktop app's `mcpServers` block. The entry shape is the same everywhere: a `command`, `args`,
+and an `env` block, under a key the host reads.
+
+```json
+{
+  "mcpServers": {
+    "job-market": {
+      "command": "/absolute/path/to/uv",
+      "args": ["run", "--directory", "/absolute/path/to/repo", "python", "-m", "src.mcp.server"],
+      "env": {
+        "DATABASE_URL": "postgresql://jobmarket:…@localhost:5432/jobmarket",
+        "OLLAMA_BASE_URL": "http://localhost:11434"
+      }
+    }
+  }
+}
+```
+
+Run that `uv` command yourself before blaming the host. A process that sits silent is correct:
+stdio is waiting for the host to speak first on stdin.
+
 ## Project structure
 
 ```
@@ -114,6 +149,7 @@ src/
   extraction/          # schema, transform, pipeline
   storage/             # embed, vector search, analytics, rollups
   agent/               # DeepSeek tool-calling loop
+  mcp/                 # FastMCP stdio server, same three tools
   serving/             # FastAPI + SSE
 tests/
 evals/                 # gold-set generator, grounding audit, frozen snapshots

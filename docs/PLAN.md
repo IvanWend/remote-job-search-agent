@@ -1,6 +1,6 @@
 # Plan — distribution & ops
 
-Status: **CI done** (2026-09-29). MCP, frontend, and deployment not started. Build plan for four
+Status: **CI and MCP done** (2026-09-30). Frontend and deployment not started. Build plan for four
 additive work items. No pipeline/agent/extraction/embedding/config logic changes.
 
 ## Decisions
@@ -23,14 +23,15 @@ additive work items. No pipeline/agent/extraction/embedding/config logic changes
 - The committed snapshot (`evals/snapshots/2026-08-12_raw.dump`) is raw-only; the structured corpus
   lives only in the uncommitted local `jobmarket_eval`.
 
-## 1. MCP server
+## 1. MCP server — done (2026-09-30)
 
-- New `src/mcp/server.py` (FastMCP from the `mcp` SDK), one `@mcp.tool()` per closure, a conn per
-  call (single-user server).
-- Add `mcp` to `pyproject.toml` + `uv.lock`.
-- New `tests/test_mcp.py` (purity/schema, offline — mirror `test_agent_tools.py`'s no-DB contracts).
-- `README.md` + a Claude Desktop config example; env vars (`DATABASE_URL`, `OLLAMA_BASE_URL`) go in
-  the config's `env` block — `.env` resolves against the spawned process CWD, which is unreliable.
+Landed as specified, with one deviation: stayed on `mcp` 1.29 (`FastMCP`), not SDK v2
+(`MCPServer`). `uv lock --upgrade-package mcp` also moves pydantic-ai 2.24 → 2.52. See DECISIONS.
+
+- `src/mcp/server.py`: one `@mcp.tool()` per closure, a conn per call, stdio via `mcp.run()`.
+- `mcp` 1.29 in `pyproject.toml` + `uv.lock`.
+- `tests/test_mcp.py`: schema + missing-URL, offline. No DB tests.
+- README MCP client example. `DATABASE_URL` and `OLLAMA_BASE_URL` go in the config `env` block.
 
 ## 2. Deployment
 
@@ -68,10 +69,11 @@ flag; asserts the lock matches `pyproject.toml`) and pinned action SHAs (`checko
 
 ## Sequencing
 
-1. CI (guards everything else, lowest risk).
-2. MCP server (additive, local-only, immediate Claude Desktop win).
+1. CI (guards everything else, lowest risk). Done.
+2. MCP server (additive, local-only, immediate win in any MCP client). Done.
 3. Frontend (builds against localhost; `VITE_API_BASE` flips to prod later).
 4. Deployment (last; gated on provider + budget).
+* Scheduled re-ingestion.
 
 1 and 2 are independent. 3 needs only localhost. 4 needs the host decision.
 

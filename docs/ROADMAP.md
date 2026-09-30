@@ -5,10 +5,11 @@ A **remote job search agent over heterogeneous boards.**
 **Maintenance rule.** Current state is rewritten from scratch each session, not appended to.
 Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
-## Current state (2026-09-29)
+## Current state (2026-09-30)
 
-- **Phase: 5 — Distribution & ops.** CI is in. Phases 1–4 complete. Next is the MCP server, then
-  frontend, then deployment. The agent eval suite stays deferred to deployment. Plan: `docs/PLAN.md`.
+- **Phase: 5 — Distribution & ops.** CI and the MCP server are in. Phases 1–4 complete. Next is
+  the frontend, then deployment. The agent eval suite stays deferred to deployment. Plan:
+  `docs/PLAN.md`.
 
 ## Phase 1 — Ingestion
 
@@ -53,8 +54,8 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 - [x] CI — `.github/workflows/ci.yml` (ruff + mypy + pytest; 7 DB tests skipped via missing
       `EVAL_DATABASE_URL`); `app.py` / `build_agent` import without env (see docs/PLAN.md)
-- [ ] MCP server — `src/mcp/server.py` (FastMCP), 3 granular tools over the existing closures,
-      stdio transport, direct DB (no DeepSeek key)
+- [x] MCP server — `src/mcp/server.py` (FastMCP 1.29, not SDK v2 — see DECISIONS), 3 tools over
+      the existing closures, stdio, direct DB (no DeepSeek key)
 - [ ] Frontend — React + Vite + Tailwind SPA, served from FastAPI `StaticFiles`
 - [ ] Deployment — single VPS + extended docker-compose (`web` + `ollama`, CPU host);
       provider + budget TBD; run the agent eval baseline before/after the provider/model swap
@@ -67,6 +68,6 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Next
 
-1. MCP server (`src/mcp/`) — 3 tools over the existing closures, stdio, no DeepSeek key.
-2. Then frontend (`frontend/`) → deployment, per `docs/PLAN.md`.
-3. Decide hosting provider + budget before deployment; CPU host for Ollama is settled.
+1. Frontend (`frontend/`) — React + Vite + Tailwind, served from FastAPI `StaticFiles`.
+2. Then deployment, per `docs/PLAN.md`. Decide hosting provider + budget first; CPU host for
+   Ollama is settled.
