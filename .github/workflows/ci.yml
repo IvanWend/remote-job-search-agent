@@ -10,6 +10,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      DATABASE_URL: postgresql://jobmarket:devpassword@localhost:5432/jobmarket
+      EVAL_DATABASE_URL: postgresql://jobmarket:devpassword@localhost:5432/jobmarket
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: jobmarket
+          POSTGRES_PASSWORD: devpassword
+          POSTGRES_DB: jobmarket
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U jobmarket"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -22,4 +39,23 @@ jobs:
 
       - run: uv run ruff check src/ evals/ tests/
       - run: uv run mypy src/ tests/
+
+      # psycopg is already a dependency; applying SQL over it avoids an apt
+      # install of postgresql-client. autocommit=True so the schema files' own
+      # BEGIN/COMMIT wrappers are the transaction boundaries.
+      - name: Apply schema and seed
+        run: |
+          uv run python - <<'PY'
+          import glob, os, psycopg
+
+          files = [
+              "init/001_extensions.sql",
+              *sorted(glob.glob("db/schema/*.sql")),
+              "tests/fixtures/ci_eval_seed.sql",
+          ]
+          with psycopg.connect(os.environ["DATABASE_URL"], autocommit=True) as conn:
+              for path in files:
+                  conn.execute(open(path).read())
+          PY
+
       - run: uv run pytest -q
