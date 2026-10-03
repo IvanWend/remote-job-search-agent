@@ -5,11 +5,12 @@ A **remote job search agent over heterogeneous boards.**
 **Maintenance rule.** Current state is rewritten from scratch each session, not appended to.
 Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
-## Current state (2026-09-30)
+## Current state (2026-10-03)
 
-- **Phase: 5 — Distribution & ops.** CI and the MCP server are in. Phases 1–4 complete. Next is
-  the frontend, then deployment. The agent eval suite stays deferred to deployment. Plan:
-  `docs/PLAN.md`.
+- **Phase: 5 — Distribution & ops, reordered to "prove it, then ship".** CI and the MCP server are
+  in; Phases 1–4 core complete. The deferred evals now run *before* the frontend and deployment:
+  offline fixtures + `schema.py` tests → extraction eval loop (freezes the corpus) → agent eval
+  suite → data hardening → frontend → deployment → re-ingestion → polish. Plan: `docs/PLAN.md`.
 
 ## Phase 1 — Ingestion
 
@@ -29,8 +30,8 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 - [x] Repairs + audit — salary-quote fallback, `apply_ground_truth`, `backfill.py` over the stored
       corpus, `evals/grounding_audit.py`
 - [x] `tests/test_normalize.py`, `tests/test_transform.py`, `tests/test_source_adapters.py`
-- [ ] Offline fixtures — cache a response per source so the demo path runs offline, then tests for
-      `schema.py`
+- [x] Offline fixtures — `tests/fixtures/raw_responses.json` (one response per source) +
+      `tests/test_schema.py`
 - [ ] Eval loop — hand-label `evals/gold_labeled.json` on `(source, external_id)`, per-field /
       `doc_type` / role-alignment script, iterate the prompt to a threshold set after run one
 
@@ -68,6 +69,7 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Next
 
-1. Frontend (`frontend/`) — React + Vite + Tailwind, served from FastAPI `StaticFiles`.
-2. Then deployment, per `docs/PLAN.md`. Decide hosting provider + budget first; CPU host for
-   Ollama is settled.
+1. CI with a real DB — pgvector service + curated fixture, drop the 7 `skip`s.
+2. Hand-label `gold_40_candidates.json` → `gold_labeled.json`, then the extraction eval loop.
+
+Full order and locked decisions: `docs/PLAN.md`.

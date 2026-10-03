@@ -14,7 +14,8 @@ EXTRACTION   LLM + Pydantic schema, grounded by verbatim quotes ──►  struc
 STORAGE      Postgres + pgvector; local bge-m3 embeddings (1024-dim) ──►  posting_embeddings
 AGENT        DeepSeek tool-calling loop: sql_query · vector_search · role_detail
 MCP          same three tools over stdio — no DeepSeek key
-SERVING      FastAPI (SSE streaming) · Langfuse tracing · Docker Compose
+SERVING      FastAPI (SSE streaming) · Langfuse tracing
+FRONTEND     React + Vite + Tailwind SPA, served from FastAPI StaticFiles
 ```
 
 Four boards, remote only. Corpus size is not the goal — postings older than 90 days are mostly
@@ -32,6 +33,7 @@ filled. Schema and extraction rules live in `db/schema/` and `src/extraction/`, 
 | HTML parsing | BeautifulSoup 4 — Habr description bodies |
 | Database | Postgres 17 + pgvector |
 | API | FastAPI, SSE streaming |
+| Frontend | React + Vite + Tailwind — single-page chat UI, hand-written SSE client |
 | MCP | FastMCP stdio — same three tools, no DeepSeek key |
 | Tracing | Langfuse (self-hosted, Docker) |
 | Orchestration | Docker Compose |
@@ -151,6 +153,7 @@ src/
   agent/               # DeepSeek tool-calling loop
   mcp/                 # FastMCP stdio server, same three tools
   serving/             # FastAPI + SSE
+frontend/             # React + Vite + Tailwind SPA (builds to dist/, served by FastAPI)
 tests/
 evals/                 # gold-set generator, grounding audit, frozen snapshots
 docs/ROADMAP.md

@@ -1,91 +1,64 @@
-# Plan — distribution & ops
+# Plan — prove it, then ship
 
-Status: **CI and MCP done** (2026-09-30). Frontend and deployment not started. Build plan for four
-additive work items. No pipeline/agent/extraction/embedding/config logic changes.
+Status: **CI + MCP done** (2026-09-30); **offline fixtures + `schema.py` tests done**
+(2026-10-03). The remainder is reordered so the *proof* (evals + CI-with-a-real-DB) lands before
+the UI and the launch. No pipeline/agent/extraction/embedding logic changes except the SSE
+`tool_result` frame and the two prompt-side extraction fixes, which land inside the eval loop's
+re-extraction (below).
 
-## Decisions
+## Locked decisions
 
 | Item | Decision |
 |---|---|
-| MCP server | 3 granular tools (`sql_query` / `vector_search` / `role_detail`) over the existing closures, direct DB, stdio transport. No DeepSeek key in the MCP process. |
-| Deployment | Single VPS + extended docker-compose (`web` + `ollama` added; `db`/`pgdata` untouched). Ollama on-host, **CPU** (bge-m3 is ~2 GB — slow but fine for a demo). Provider + budget **TBD**. |
-| Frontend | React + Vite + Tailwind SPA served from FastAPI `StaticFiles`; Vite dev-proxy → `localhost:8000`; `VITE_API_BASE` for prod. |
-| CI | `.github/workflows/ci.yml`: ruff + mypy + pytest. 7 DB tests skipped via missing `EVAL_DATABASE_URL`. Code made robust to missing env (no dummy vars in CI). |
+| Eval source of truth | The agent eval runs against a **refreshed `jobmarket_eval`**, re-dumped from live after the freeze. Same frozen data before *and* after the provider/model swap — otherwise the comparison is confounded by the re-extraction, not the swap. |
+| SSE tool results | The `tool_result` frame carries the tool's `content`, not just `name` — grounding-quote rendering needs it. `role_detail` is the only tool that returns `source_quotes`. |
+| Frontend | React + Vite + Tailwind SPA, one chat page, hand-written SSE client (not `EventSource`), one reducer, TS types mirroring `Answer` + the SSE payloads. Served from FastAPI `StaticFiles`, mounted **only when `dist/` exists** (CI has no build). |
+| MCP | 3 granular tools (`sql_query` / `vector_search` / `role_detail`) over the existing closures, direct DB, stdio, no DeepSeek key. *(done)* |
+| CI | ruff + mypy + pytest. Add a pgvector Postgres service + curated snapshot subset, delete the 7 DB `skip`s. *(still skipped)* |
+| Deployment | Single VPS + docker-compose (`web` + `ollama`); provider + budget TBD; run the agent eval before/after the provider/model swap. |
 
-## Context (why these shapes)
+## Order
 
-- Serving is thin: `create_app()` with `/health` + `GET/POST /ask` (SSE). The agent query path is
-  three closures (`make_sql_query` / `make_vector_search` / `make_role_detail`) over a `conn`.
-- `vector_search` embeds via Ollama (`bge-m3`, 1024-dim) at query time — every path needs
-  `OLLAMA_BASE_URL` reachable.
-- Tests aren't fully offline: 7 tests in `tests/test_agent_tools.py` need the populated eval
-  snapshot (`EVAL_DATABASE_URL`, `db_meta.role='eval'`). The other ~141 are offline.
-- The committed snapshot (`evals/snapshots/2026-08-12_raw.dump`) is raw-only; the structured corpus
-  lives only in the uncommitted local `jobmarket_eval`.
+Stage 1 — prove it
 
-## 1. MCP server — done (2026-09-30)
+1. Offline fixtures + `schema.py` tests — cache one real response per source from the snapshot's
+   `raw_text`, never invented. *(done)*
+2. CI with a real DB — `pgvector/pgvector:pg17` service + curated fixture; delete the 7 `skip`s.
+3. Hand-label `gold_40_candidates.json` → `gold_labeled.json` — the gate before any eval loop.
+4. Extraction eval loop — run one → measure field-level accuracy → fold stack fill-down +
+   description double-emit into the ≤2 prompt iterations *here* (prompt-side, must precede the
+   freeze) → re-extract + re-embed + **re-snapshot to a new date-stamped file**. Freeze.
+5. Refresh `jobmarket_eval` from the frozen live corpus (per decision 1).
+6. Agent eval suite — commit ~15 questions + scorer; deterministic (graded vs DB truth) + semantic
+   (graded on provenance) + one injection + one cross-language; **3 runs each, report pass rate**.
 
-Landed as specified, with one deviation: stayed on `mcp` 1.29 (`FastMCP`), not SDK v2
-(`MCPServer`). `uv lock --upgrade-package mcp` also moves pydantic-ai 2.24 → 2.52. See DECISIONS.
+Stage 2 — harden data (code-only, post-freeze)
 
-- `src/mcp/server.py`: one `@mcp.tool()` per closure, a conn per call, stdio via `mcp.run()`.
-- `mcp` 1.29 in `pyproject.toml` + `uv.lock`.
-- `tests/test_mcp.py`: schema + missing-URL, offline. No DB tests.
-- README MCP client example. `DATABASE_URL` and `OLLAMA_BASE_URL` go in the config `env` block.
+7. `currency_enum` validation — reject unknown currencies instead of `"xyz" → "XYZ"`.
+8. NULL-currency handling — fix or document; caveat the unfixed holes in `Answer`.
 
-## 2. Deployment
+Stage 3 — build the UI
 
-- Add `web` (uvicorn in a slim image, new `Dockerfile`) + `ollama` services to `docker-compose.yml`.
-  **Keep `db` and `pgdata` as-is** — additive services preserve the Compose project name and volume.
-- Deploy = run the pipeline once on the host (ingest → extract → embed), then cron
-  ingest/purge/rollups/embed for the 90-day window. The app against an empty DB returns nothing.
-- TLS/reverse proxy if public. Provider + budget TBD before this starts.
-- Run the deferred agent eval baseline against the snapshot **before and after** the
-  provider/model swap — the one place agent behaviour is expected to change.
+9. Frontend — per the locked decision; `sse.py` emits `content`; guarded `StaticFiles` mount;
+   `.gitignore` adds `frontend/node_modules/`, `frontend/dist/`.
 
-## 3. Frontend
+Stage 4 — ship
 
-- New `frontend/` Vite project (React + Tailwind); `EventSource('/ask?q=')` for GET, streaming
-  `fetch` for POST; components per SSE frame (`tool_call` / `tool_result` / `answer` / `error`).
-- `src/serving/app.py`: mount `StaticFiles` at `/` in `create_app()` (keep `/health` + `/ask`).
-- `.gitignore`: add `node_modules/`, `dist/`. `frontend/` is invisible to pytest/mypy/ruff.
+10. Rate limit + spend cap + max-turns on the agent loop (before public, non-negotiable).
+11. Packaging — minimal package config (reverses a documented convention; log in DECISIONS).
+12. Fresh ingest + extract right before deploy (demo freshness).
+13. Deploy — VPS + `web` + `ollama`; agent eval before/after the provider/model swap.
+14. Scheduled re-ingestion — fix rollup staleness + purge↔refresh ordering *first*, then cron.
 
-## 4. CI — done (2026-09-29)
+Stage 5 — polish (only after step 13 is live)
 
-Landed as specified, with two deviations from the draft: `uv sync --locked` (Astral's current
-flag; asserts the lock matches `pyproject.toml`) and pinned action SHAs (`checkout` v7.0.1,
-`setup-uv` v9.0.0) instead of floating tags.
+15. README (architecture diagram, eval table, Known limitations, demo GIF) + cross-source dedup +
+    trend charts + hand-rolled validate-and-retry.
 
-- New `.github/workflows/ci.yml`: `setup-python 3.13` → `uv sync` → `ruff check src/ evals/ tests/`
-  → `mypy src/ tests/` → `pytest -q`.
-- Skip the 7 DB tests: `pytest.skip` inside the `eval_conn` fixture when `EVAL_DATABASE_URL` is unset.
-- Two env-robustness edits so the offline suite imports without env:
-  1. `src/serving/app.py` — `url = os.environ.get("DATABASE_URL")`, raise a clear error in
-     `_connect()` when unset.
-  2. `src/agent/loop.py` — `Agent(..., defer_model_check=True)` so `build_agent` doesn't demand
-     `DEEPSEEK_API_KEY` at construction. **Scope note:** this touches agent construction (on the
-     "no agent logic" line); verify `defer_model_check` defers DeepSeek's *key* lookup in
-     pydantic-ai 2.24.0, else `skipif` that one test.
+## If only three
 
-## Sequencing
-
-1. CI (guards everything else, lowest risk). Done.
-2. MCP server (additive, local-only, immediate win in any MCP client). Done.
-3. Frontend (builds against localhost; `VITE_API_BASE` flips to prod later).
-4. Deployment (last; gated on provider + budget).
-* Scheduled re-ingestion.
-
-1 and 2 are independent. 3 needs only localhost. 4 needs the host decision.
-
-## Risk
-
-- All four items are additive. Python changes are limited to the `StaticFiles` mount (keep
-  `/health`+`/ask`) and the two env-robustness edits. No existing test logic changes.
-- Docker Compose risk is confined to *renaming* `db`/`pgdata` or the folder — adding `web`/`ollama`
-  services is safe (see AGENTS.md).
-- Any future swap of the embedder (`embed.py`) re-embeds the corpus and invalidates the snapshot's
-  vectors — keep it untouched unless separately scoped.
+Agent eval with repeated runs (6) · CI with a real DB (2) · rate/spend cap (10).
 
 ## Open decisions
 
-- Hosting provider + monthly budget (blocks deployment execution only). CPU host settled.
+- Hosting provider + monthly budget (blocks step 13; research in parallel — not a code task).
