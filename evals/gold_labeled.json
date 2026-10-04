@@ -1,0 +1,1885 @@
+{
+  "hn": {
+    "48750474": {
+      "doc_type": "posting",
+      "company": "Bucket Robotics",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Senior Fullstack Engineer",
+          "seniority": "senior",
+          "stack": [],
+          "location": "San Francisco, CA",
+          "remote_policy": "onsite",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "As an early full-stack hire, you will own a massive surface area. You’ll be responsible for building our customer-facing application, scaling our internal tooling, and designing the data pipelines that move CAD and vision data at scale.",
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "48747990": {
+      "doc_type": "posting",
+      "company": "We The Flywheel",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Agentic Engineer",
+          "seniority": "unknown",
+          "stack": [
+            "claude code",
+            "cursor",
+            "aider"
+          ],
+          "location": "REMOTE (worldwide)",
+          "remote_policy": "remote",
+          "employment_type": "contract",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "ship real software with AI coding agents (Claude Code, Cursor, Aider). You're an engineer, not a prompt operator: basic technical foundation in databases, frameworks, integrations, APIs. <30 hrs/wk.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Sr Agentic Engineer",
+          "seniority": "senior",
+          "stack": [],
+          "location": "REMOTE (worldwide)",
+          "remote_policy": "remote",
+          "employment_type": "contract",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "architect and own multi-step agent workflows; track record required. <30 hrs/wk.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 2,
+          "title": "Agentic Operator",
+          "seniority": "unknown",
+          "stack": [
+            "sso"
+          ],
+          "location": "REMOTE (worldwide)",
+          "remote_policy": "remote",
+          "employment_type": "contract",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "the human-in-the-loop: walk user flows, native-language QA of AI output, and the testing agents can't do alone (SSO, captchas, mobile apps). 10–40 hrs/wk, open to all levels.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 3,
+          "title": "AI-Native Tech & Growth Director",
+          "seniority": "staff+",
+          "stack": [],
+          "location": "REMOTE (worldwide)",
+          "remote_policy": "remote",
+          "employment_type": "contract",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 4,
+          "title": "Head of Data Science",
+          "seniority": "staff+",
+          "stack": [],
+          "location": "REMOTE (worldwide)",
+          "remote_policy": "remote",
+          "employment_type": "contract",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "48751162": {
+      "doc_type": "posting",
+      "company": "Aurelius Systems",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Business Operations Associate",
+          "seniority": "unknown",
+          "stack": [
+            "ai",
+            "robotics",
+            "directed energy"
+          ],
+          "location": "San Francisco",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": 7500,
+          "salary_max": 10000,
+          "salary_currency": "USD",
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Sr. ML Engineer, Perception",
+          "seniority": "senior",
+          "stack": [
+            "ai",
+            "robotics",
+            "directed energy"
+          ],
+          "location": "San Francisco",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": 15833,
+          "salary_max": 18500,
+          "salary_currency": "USD",
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 2,
+          "title": "Sr. Robotics Software Engineer, Controls",
+          "seniority": "senior",
+          "stack": [
+            "ai",
+            "robotics",
+            "directed energy"
+          ],
+          "location": "San Francisco",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": 11667,
+          "salary_max": 15000,
+          "salary_currency": "USD",
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 3,
+          "title": "Lead, Forward Deployed Engineer (FDE)",
+          "seniority": "staff+",
+          "stack": [
+            "ai",
+            "robotics",
+            "directed energy"
+          ],
+          "location": "San Francisco",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": 13333,
+          "salary_max": 17500,
+          "salary_currency": "USD",
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 4,
+          "title": "Sr. Robotics Software Engineer",
+          "seniority": "senior",
+          "stack": [
+            "ai",
+            "robotics",
+            "directed energy"
+          ],
+          "location": "San Francisco",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": 15417,
+          "salary_max": 19583,
+          "salary_currency": "USD",
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 5,
+          "title": "Electrical Engineer",
+          "seniority": "unknown",
+          "stack": [
+            "ai",
+            "robotics",
+            "directed energy"
+          ],
+          "location": "San Francisco",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": 10833,
+          "salary_max": 14167,
+          "salary_currency": "USD",
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "48753050": {
+      "doc_type": "posting",
+      "company": "Stealth",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Founding Engineer",
+          "seniority": "staff+",
+          "stack": [
+            "python",
+            "rust",
+            "typescript"
+          ],
+          "location": "NYC",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": 15000,
+          "salary_max": 18333,
+          "salary_currency": "USD",
+          "description": "You'd be one of the first engineers, working directly with the founders across the stack: agents, low-level systems, ML infra, and the runtime that ties it together.",
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "48755327": {
+      "doc_type": "posting",
+      "company": "ViyaMD",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Staff Software Engineer",
+          "seniority": "staff+",
+          "stack": [
+            "python",
+            "typescript"
+          ],
+          "location": "SF Bay Area",
+          "remote_policy": "onsite",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Own core product and platform systems: medical record ingestion, document understanding pipelines, backend/data infrastructure, clinical workflow, and production reliability.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Staff ML Engineer",
+          "seniority": "staff+",
+          "stack": [
+            "python",
+            "llms",
+            "rag",
+            "agents",
+            "fine-tuning"
+          ],
+          "location": "SF Bay Area",
+          "remote_policy": "onsite",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Own how ViyaMD evaluates and improves its clinical AI: define eval metrics, run model/agent evaluations, improve prompts and workflows, and close the loop through better retrieval, agentic systems, and fine-tuned models.",
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "48753597": {
+      "doc_type": "posting",
+      "company": "Puma.tech",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Engineer",
+          "seniority": "unknown",
+          "stack": [
+            "ios",
+            "macos",
+            "android",
+            "browser extensions",
+            "ai",
+            "ml"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Based Social Media Intern",
+          "seniority": "intern",
+          "stack": [],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 2,
+          "title": "Engineering Intern",
+          "seniority": "intern",
+          "stack": [],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 3,
+          "title": "Design Intern",
+          "seniority": "intern",
+          "stack": [],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 4,
+          "title": "Growth Intern",
+          "seniority": "intern",
+          "stack": [],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "48749201": {
+      "doc_type": "posting",
+      "company": "Splash Tech",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Backend Engineer",
+          "seniority": "senior",
+          "stack": [
+            "java",
+            "python",
+            "typescript",
+            "angular",
+            "sql",
+            "aws",
+            "kubernetes",
+            "postgres",
+            "trino",
+            "flux",
+            "flagger",
+            "terraform"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Strong in backend development, ideally Java, but open to those willing to learn. DevOps experience is a plus, or a strong desire to learn it.You'll be expected to do devops as part of this role.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "DevOps Engineer",
+          "seniority": "senior",
+          "stack": [
+            "java",
+            "python",
+            "typescript",
+            "angular",
+            "sql",
+            "aws",
+            "kubernetes",
+            "postgres",
+            "trino",
+            "flux",
+            "flagger",
+            "terraform",
+            "ec2",
+            "albs",
+            "route53",
+            "cloudflare"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Your main role will be devops on AWS. Willingness to learn Java. Expected to have familiarity with terraform, kubernetes, ec2, ALBs, route53, cloudflare.",
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "48760900": {
+      "doc_type": "posting",
+      "company": "Tower",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Senior Backend / Platform Engineer",
+          "seniority": "senior",
+          "stack": [
+            "go",
+            "rust",
+            "python",
+            "kubernetes",
+            "eks",
+            "karpenter",
+            "aws",
+            "rds",
+            "postgres",
+            "elasticache",
+            "redis",
+            "s3",
+            "iceberg",
+            "workos"
+          ],
+          "location": "London or Berlin",
+          "remote_policy": "hybrid",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "This is deep systems work--things like scheduling, distributed execution, and performance. We're not gluing SaaS together.",
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "48794583": {
+      "doc_type": "posting",
+      "company": "FusionAuth",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Principal Software Engineer",
+          "seniority": "staff+",
+          "stack": [
+            "java",
+            "postgres",
+            "docker",
+            "kubernetes",
+            "mysql",
+            "oauth",
+            "saml",
+            "oidc"
+          ],
+          "location": "USA",
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": 18750,
+          "salary_max": 22500,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Senior Java Engineer - Cloud",
+          "seniority": "senior",
+          "stack": [
+            "java",
+            "postgres",
+            "docker",
+            "kubernetes",
+            "mysql",
+            "oauth",
+            "saml",
+            "oidc"
+          ],
+          "location": "USA",
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 2,
+          "title": "Account Executive",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "USA, Europe",
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "48829225": {
+      "doc_type": "posting",
+      "company": "OpsMill",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Principal Software Engineer",
+          "seniority": "staff+",
+          "stack": [
+            "python"
+          ],
+          "location": "Europe/US",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "own the architecture across our platform. Shape the graph database engine and backend, cut tech debt, push AI-first engineering.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Product Reliability Engineer",
+          "seniority": "unknown",
+          "stack": [
+            "python",
+            "go",
+            "rust",
+            "kubernetes"
+          ],
+          "location": "Europe/US",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "customers run us on-prem, so reliability is the product. You'll dig into Kubernetes escalations, find root causes, build tooling so issues don't come back.",
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "49156845": {
+      "doc_type": "posting",
+      "company": "Temporal Technologies",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Senior Software Engineer, Observability",
+          "seniority": "senior",
+          "stack": [],
+          "location": "United States",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Staff Software Engineer, Observability",
+          "seniority": "staff+",
+          "stack": [],
+          "location": "United States",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 2,
+          "title": "Senior Staff Software Engineer, Infrastructure",
+          "seniority": "staff+",
+          "stack": [],
+          "location": "United States",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 3,
+          "title": "Senior Product Manager, Scalability & Compute",
+          "seniority": "senior",
+          "stack": [],
+          "location": "United States",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 4,
+          "title": "Staff Product Manager, Developer Lifecycle & Tooling",
+          "seniority": "staff+",
+          "stack": [],
+          "location": "United States",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 5,
+          "title": "Staff Product Manager, Agent Platform",
+          "seniority": "staff+",
+          "stack": [],
+          "location": "United States",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 6,
+          "title": "Senior Staff Software Engineer, Open Source Server",
+          "seniority": "staff+",
+          "stack": [],
+          "location": "United States",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 7,
+          "title": "Staff Software Engineer, Open Source Server",
+          "seniority": "staff+",
+          "stack": [],
+          "location": "United States",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 8,
+          "title": "Senior Software Engineer, Open Source Server",
+          "seniority": "senior",
+          "stack": [],
+          "location": "United States",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "49157647": {
+      "doc_type": "posting",
+      "company": null,
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Software Engineer - Full Stack",
+          "seniority": "senior",
+          "stack": [
+            "nextjs",
+            "react",
+            "typescript",
+            "tailwind",
+            "nodejs",
+            "ruby on rails",
+            "postgres",
+            "mongodb",
+            "aws",
+            "datadog",
+            "playwright",
+            "rspec"
+          ],
+          "location": "New York, NY",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": 13333,
+          "salary_max": 17500,
+          "salary_currency": "USD",
+          "description": "you'll own core domains (pricing, inventory, search), mentor engineers, and partner directly with the Head of Engineering across 5 teams.",
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "49165353": {
+      "doc_type": "posting",
+      "company": "Prior Labs",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Senior ML Infrastructure Engineer",
+          "seniority": "senior",
+          "stack": [
+            "slurm",
+            "gcp"
+          ],
+          "location": "Berlin / Freiburg / NYC",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "own multi-cluster GPU infra (Slurm on GCP today, multi-provider next), training performance, and the tooling layer.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Research Scientist, Foundation Model",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "Berlin / Freiburg / NYC",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "drive the model agenda: novel architectures, scaling 10K to 1M+ samples, multimodal and causal directions. PhD + top-venue publications or equivalent.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 2,
+          "title": "Research Engineer, Foundation Model",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "Berlin / Freiburg / NYC",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "same agenda from the engineering side: you design experiments, write the training and eval infra, and co-author the papers.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 3,
+          "title": "ML Engineer, Cloud Platform",
+          "seniority": "unknown",
+          "stack": [
+            "python",
+            "fastapi",
+            "terraform",
+            "kubernetes"
+          ],
+          "location": "Berlin / Freiburg / NYC",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "design and scale the backend that serves and finetunes the models.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 4,
+          "title": "Full Stack Engineer, ML Platform",
+          "seniority": "unknown",
+          "stack": [
+            "typescript",
+            "python",
+            "react",
+            "fastapi",
+            "postgres"
+          ],
+          "location": "Berlin / Freiburg / NYC",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "build the product end to end.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 5,
+          "title": "Applied Scientist",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "Berlin / Freiburg / NYC",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 6,
+          "title": "Forward Deployed ML Engineer",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "Berlin / Freiburg / NYC",
+          "remote_policy": "onsite",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "49166165": {
+      "doc_type": "posting",
+      "company": "Matcha.fm",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Founding AI Engineer (ML/data)",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "US / Canada / Europe / UK / Brazil / LATAM",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Backend Engineer",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "US / Canada / Europe / UK / Brazil / LATAM",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 2,
+          "title": "Full-Stack / Frontend Engineer",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "US / Canada / Europe / UK / Brazil / LATAM",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 3,
+          "title": "Design",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "US / Canada / Europe / UK / Brazil / LATAM",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 4,
+          "title": "Marketing / GTM / Growth",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "US / Canada / Europe / UK / Brazil / LATAM",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "49171913": {
+      "doc_type": "posting",
+      "company": "Pango",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Founding Software Engineer",
+          "seniority": "unknown",
+          "stack": [
+            "rust",
+            "go",
+            "shopify",
+            "wms",
+            "ims"
+          ],
+          "location": "Stockholm, Sweden",
+          "remote_policy": "hybrid",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "You are comfortable maintaining, expanding and operating an B2B SaaS platform with a high sense of ownership.",
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    },
+    "49262026": {
+      "doc_type": "posting",
+      "company": "Stpkr Technologies",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Systems Engineer",
+          "seniority": "unknown",
+          "stack": [
+            "android",
+            "linux",
+            "c",
+            "cpp",
+            "java"
+          ],
+          "location": "Noida, India (Delhi NCR)",
+          "remote_policy": "onsite",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Everything at the OS layer. You've rooted phones, flashed custom ROMs, broken and fixed Linux for fun. Comfortable in C/C++. GitHub with kernel-adjacent or LineageOS-type projects a plus.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 1,
+          "title": "Hardware Engineer - Bring-up/Debug/Integration",
+          "seniority": "unknown",
+          "stack": [
+            "j-link",
+            "kicad",
+            "altium",
+            "easyeda",
+            "petalinux"
+          ],
+          "location": "Noida, India (Delhi NCR)",
+          "remote_policy": "onsite",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Take EVT/DVT boards and make them work. Comfortable with J-Link and IDE debugging, reading schematics and reference designs. KiCad/Altium/EasyEDA hobby work would make you ideal.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 2,
+          "title": "Hardware Engineer - Power/RF/Wireless",
+          "seniority": "unknown",
+          "stack": [
+            "logic analyzer",
+            "spi"
+          ],
+          "location": "Noida, India (Delhi NCR)",
+          "remote_policy": "onsite",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Make the power and RF paths behave on EVT/DVT boards. Hands-on with schematic capture, layout, soldering, scope/logic analyzer. Given two unknowns, you pick one and start measuring.",
+          "source_quotes": {},
+          "derived_fields": []
+        },
+        {
+          "role_index": 3,
+          "title": "Founder's Office",
+          "seniority": "unknown",
+          "stack": [],
+          "location": "Noida, India (Delhi NCR)",
+          "remote_policy": "onsite",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Work closely with the founder and the rest of the team to manage the day to day and long term affairs of the company, the Man Friday of the company.",
+          "source_quotes": {},
+          "derived_fields": []
+        }
+      ]
+    }
+  },
+  "habr": {
+    "1000168099": {
+      "doc_type": "posting",
+      "company": "Top Selection",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Технический Писатель",
+          "seniority": "senior",
+          "stack": [
+            "gost"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": 20000,
+          "salary_max": 220000,
+          "salary_currency": "RUB",
+          "description": "Сбор всех необходимых материалов и написание ИТ документации по стандартам ГОСТ 19 к информационным системам НРД, таким как core back-end системы, веб-кабинеты и клиентские приложения, интеграционные системы.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "remote_policy",
+            "salary_currency",
+            "salary_max",
+            "salary_min",
+            "seniority",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "1000167928": {
+      "doc_type": "posting",
+      "company": "МГТС",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "DataOps",
+          "seniority": "mid",
+          "stack": [
+            "dwh",
+            "docker",
+            "python",
+            "go",
+            "kubernetes",
+            "sql",
+            "s3",
+            "clickhouse"
+          ],
+          "location": "Москва",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": 300000,
+          "salary_currency": "RUB",
+          "description": "Предстоит отвечать за инфраструктуру дата-платформы как за продукт: хранилище, оркестрацию, надёжность, безопасность и self-serve для команд данных.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "location",
+            "remote_policy",
+            "salary_currency",
+            "salary_max",
+            "salary_min",
+            "seniority",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "1000162782": {
+      "doc_type": "posting",
+      "company": "ИТ-Холдинг Т1",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Специалист по информационной безопасности",
+          "seniority": "mid",
+          "stack": [
+            "waterfall"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Формировать требования информационной безопасности к новым и дорабатываемым информационным системам.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "remote_policy",
+            "seniority",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "1000164801": {
+      "doc_type": "posting",
+      "company": "МТ-Интеграция",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Архитектор Presale (Видеонаблюдение)",
+          "seniority": "unknown",
+          "stack": [
+            "pre-sale"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Вести предпродажную техническую проработку проектов систем видеонаблюдения (СВН): анализ ТЗ, выездные обследования;",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "remote_policy",
+            "seniority",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "1000164837": {
+      "doc_type": "posting",
+      "company": "Лаборатория Касперского",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Project Manager (B2B)",
+          "seniority": "unknown",
+          "stack": [],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Планирование программных релизов совместно с менеджером продукта, аналитиком и архитектором.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "remote_policy",
+            "seniority",
+            "title"
+          ]
+        }
+      ]
+    },
+    "1000166704": {
+      "doc_type": "posting",
+      "company": "СберЗдоровье",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Продуктовый дизайнер",
+          "seniority": "mid",
+          "stack": [
+            "figma design"
+          ],
+          "location": "Москва",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Развивать и улучшать текущий флоу пользователя на сайте: от витрины анализов до оплаты корзины и записи;",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "location",
+            "remote_policy",
+            "seniority",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "1000167282": {
+      "doc_type": "posting",
+      "company": "Лаборатория Касперского",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Research Developer (Emu)",
+          "seniority": "unknown",
+          "stack": [
+            "c"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Поддержка и развитие подсистемы логирования Sandbox продуктов;",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "remote_policy",
+            "seniority",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "1000167844": {
+      "doc_type": "posting",
+      "company": "Cobalt Lab",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Project Manager (iGaming)",
+          "seniority": "senior",
+          "stack": [
+            "agile"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "управлять процессом разработки и координировать работу команды;",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "remote_policy",
+            "seniority",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "1000167846": {
+      "doc_type": "posting",
+      "company": "ITK academy",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Java Developer",
+          "seniority": "junior",
+          "stack": [
+            "java",
+            "kotlin",
+            "git",
+            "docker",
+            "spring"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": 75000,
+          "salary_max": null,
+          "salary_currency": "RUB",
+          "description": null,
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "remote_policy",
+            "salary_currency",
+            "salary_max",
+            "salary_min",
+            "seniority",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "1000167887": {
+      "doc_type": "posting",
+      "company": "Top Selection",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Разработчик Oracle",
+          "seniority": "unknown",
+          "stack": [
+            "oracle",
+            "plsql",
+            "git"
+          ],
+          "location": null,
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": 270000,
+          "salary_max": 390000,
+          "salary_currency": "RUB",
+          "description": "Поддержка и развитие отчётности для Банка в текущей АБС.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "remote_policy",
+            "salary_currency",
+            "salary_max",
+            "salary_min",
+            "seniority",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    }
+  },
+  "web3": {
+    "150580": {
+      "doc_type": "posting",
+      "company": "Pelican Strategic Investments",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Web3 Developer — Onchain Products",
+          "seniority": "unknown",
+          "stack": [
+            "erc-20",
+            "smart-contract"
+          ],
+          "location": "Remote, UAE time-zone overlap required",
+          "remote_policy": "remote",
+          "employment_type": "contract",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "We are deploying a real-world asset (RWA) yield product onchain and are seeking a Web3 developer to own the technical execution of that deployment end-to-end: taking the product through tokenisation, vault configuration, and onboarding with a curator platform, then building the investor-facing frontend and supporting NAV automation across the relevant tokenization SDKs.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "location",
+            "remote_policy",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "150652": {
+      "doc_type": "posting",
+      "company": "Luxor Technology",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Business Development (China)",
+          "seniority": "unknown",
+          "stack": [
+            "business-development"
+          ],
+          "location": "China (Remote)",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "This is an individual-contributor sales role with a clear focus on revenue generation. You will be responsible for directly selling Luxor's products, managing a personal pipeline, and closing new business.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "location",
+            "remote_policy",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "150839": {
+      "doc_type": "posting",
+      "company": "APEX TRADE",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Entry-Level Crypto Market Specialist",
+          "seniority": "junior",
+          "stack": [],
+          "location": "Remote",
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Assist in day-to-day market operations with mentor supervision.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "location",
+            "remote_policy",
+            "title"
+          ]
+        }
+      ]
+    },
+    "151118": {
+      "doc_type": "posting",
+      "company": "CertiK",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Public Facing Security Researcher",
+          "seniority": "unknown",
+          "stack": [
+            "research",
+            "security"
+          ],
+          "location": " US / Remote",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "This role is for a Web3 security researcher who can act as a public face for CertiK. This means having a strong social media presence, speaking at conferences, and being openly helpful to the wider security community.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "location",
+            "remote_policy",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "151293": {
+      "doc_type": "posting",
+      "company": "RG&amp;T Solutions",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Remote Solidity Developer",
+          "seniority": "unknown",
+          "stack": [
+            "aws",
+            "java",
+            "solidity",
+            "typescript"
+          ],
+          "location": " VA Manassas US",
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Design, develop, and deploy blockchain solutions and smart contracts using Solidity, Java, and REST APIs. Collaborate with teams to gather requirements, integrate blockchain with enterprise systems, troubleshoot performance issues, and document technical specifications. Work with AWS environments, contribute to DevOps practices, and support operational improvements.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "location",
+            "remote_policy",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "152234": {
+      "doc_type": "posting",
+      "company": "Jump Crypto NY",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Director of Operations",
+          "seniority": "staff+",
+          "stack": [],
+          "location": " United States New Mexico US",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "The Director of Operations is a full-time remote role responsible for overseeing day-to-day operational activities across Jump Crypto NY. This position manages and optimizes processes, workflows, and internal controls to support trading, technology, and business functions.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "location",
+            "remote_policy",
+            "title"
+          ]
+        }
+      ]
+    },
+    "151462": {
+      "doc_type": "posting",
+      "company": "Ampstek",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Solidity Engineer || Only US Citizen and Green Card || Tampa, FL/ Jersey City, NJ/ Texas City, TX || Remote",
+          "seniority": "unknown",
+          "stack": [
+            "hardhat",
+            "javascript",
+            "solidity",
+            "truffle",
+            "typescript"
+          ],
+          "location": " Texas Metropolitan Area Austin US",
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "We are seeking a highly skilled, experienced Solidity Engineer to join our growing team. The ideal candidate will have a deep understanding of blockchain technology and its associated smart contract capabilities. In this role, you will play a pivotal part in developing and deploying smart contracts for our blockchain projects, ensuring the secure, efficient, and innovative application of decentralized technology.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "location",
+            "remote_policy",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "151392": {
+      "doc_type": "posting",
+      "company": "ZIGChain",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Infrastructure / Systems Operations Engineer (Junior to Mid)",
+          "seniority": "junior",
+          "stack": [
+            "infrastructure",
+            "aws",
+            "ci-cd",
+            "cosmos",
+            "docker",
+            "git",
+            "grafana",
+            "kubernetes",
+            "linux",
+            "nodejs",
+            "python",
+            "security",
+            "terraform"
+          ],
+          "location": "Remote",
+          "remote_policy": "remote",
+          "employment_type": "unknown",
+          "salary_min": 3333,
+          "salary_max": 4167,
+          "salary_currency": "USD",
+          "description": "Operate and maintain our Linux, AWS, and blockchain-node infrastructure on a day-to-day basis.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "location",
+            "remote_policy",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    }
+  },
+  "remotive": {
+    "2090949": {
+      "doc_type": "posting",
+      "company": "FSE LLC",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "High-Ticket Financial Sales Specialist & Team Lead Track",
+          "seniority": "unknown",
+          "stack": [
+            "c",
+            "excel",
+            "financial services",
+            "c-suite"
+          ],
+          "location": "Worldwide",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "High-Volume B2B Engagement: Conduct focused outbound campaigns (Monday – Friday) targeting business owners and C-suite executives.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "location",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "2091048": {
+      "doc_type": "posting",
+      "company": "Tribe Wellness",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Product Sales Specialist - Pet Health",
+          "seniority": "unknown",
+          "stack": [
+            "excel",
+            "salesforce",
+            "video",
+            "spark"
+          ],
+          "location": "USA, CST (UTC-6)",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": 4583,
+          "salary_max": 8333,
+          "salary_currency": "USD",
+          "description": "Sell: You’ll sell products and services for our pet client, a company built for pet owners, by pet owners, with over a million happy dogs and growing!",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "location",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "2091062": {
+      "doc_type": "posting",
+      "company": "Clipster",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Senior Product Engineer (Fullstack)",
+          "seniority": "senior",
+          "stack": [
+            "backend",
+            "frontend",
+            "fullstack",
+            "go",
+            "postgres",
+            "react",
+            "ai/ml",
+            "documentation",
+            "youtube",
+            "redis",
+            "distributed systems",
+            "gcp",
+            "chat",
+            "nextjs",
+            "infrastructure"
+          ],
+          "location": "Europe, UK, Germany, France, European timezones",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "We are looking for a Backend-Heavy Senior Engineer who isn't afraid to touch the full stack. While your primary domain will be our Golang services and distributed architecture, you are a \"Product Engineer\" at heart — meaning you understand the \"why\" behind the code and can jump into the React/Next.js frontend whenever it's the shortest path to delivering value.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "location",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "2091053": {
+      "doc_type": "posting",
+      "company": "LawnStarter",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Staff Product Engineer (Campinas)",
+          "seniority": "staff+",
+          "stack": [
+            "aws",
+            "backend",
+            "frontend",
+            "php",
+            "react",
+            "security",
+            "ui/ux",
+            "ai/ml",
+            "jira",
+            "react native",
+            "documentation",
+            "laravel",
+            "typescript",
+            "people management",
+            "prototyping",
+            "engineering management",
+            "marketplace",
+            "github",
+            "rest-api",
+            "datadog"
+          ],
+          "location": "Brazil",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": 6667,
+          "salary_max": 8333,
+          "salary_currency": "USD",
+          "description": "You're the engineering anchor of an initiative — working as part of a tight team with your PM and designer, and alongside engineering peers on adjacent initiatives. You have a hand in the full lifecycle: shaping the problem, deciding the technical approach, directing AI agents to implement much of the code, shipping to production, and — with your team — owning the outcome.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "location",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "2091088": {
+      "doc_type": "posting",
+      "company": "Creative Force ",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Sales Jedi",
+          "seniority": "unknown",
+          "stack": [
+            "saas",
+            "video",
+            "solid",
+            "chat",
+            "saas sales",
+            "mental health"
+          ],
+          "location": "Europe",
+          "remote_policy": "remote",
+          "employment_type": "full-time",
+          "salary_min": null,
+          "salary_max": null,
+          "salary_currency": null,
+          "description": "Awesome opportunity for a self-motivated and energetic people person to join our remote team and help sell our world-leading SaaS products, from anywhere in Europe.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "location",
+            "stack",
+            "title"
+          ]
+        }
+      ]
+    },
+    "2091068": {
+      "doc_type": "posting",
+      "company": "garden3d",
+      "roles": [
+        {
+          "role_index": 0,
+          "title": "Head of Marketing & Communications",
+          "seniority": "staff+",
+          "stack": [],
+          "location": "Worldwide",
+          "remote_policy": "remote",
+          "employment_type": "contract",
+          "salary_min": 13000,
+          "salary_max": 20800,
+          "salary_currency": "USD",
+          "description": "The garden3d Head of Marketing & Communications has one mandate: make sure everything we put on the internet is compelling and interesting.",
+          "source_quotes": {},
+          "derived_fields": [
+            "company",
+            "employment_type",
+            "location",
+            "title"
+          ]
+        }
+      ]
+    }
+  }
+}
