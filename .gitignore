@@ -12,6 +12,7 @@ __pycache__/
 docs/DECISIONS.md
 docs/GOTCHAS.md
 docs/PROMPT.md
+docs/PLAN.md
 docs/DB_*.md
 AGENTS.md
 opencode.json
