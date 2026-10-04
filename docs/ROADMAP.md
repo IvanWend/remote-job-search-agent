@@ -5,12 +5,12 @@ A **remote job search agent over heterogeneous boards.**
 **Maintenance rule.** Current state is rewritten from scratch each session, not appended to.
 Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
-## Current state (2026-10-03)
+## Current state (2026-10-04)
 
 - **Phase: 5 — Distribution & ops, reordered to "prove it, then ship".** CI and the MCP server are
-  in; Phases 1–4 core complete. The deferred evals now run *before* the frontend and deployment:
-  offline fixtures + `schema.py` tests → extraction eval loop (freezes the corpus) → agent eval
-  suite → data hardening → frontend → deployment → re-ingestion → polish. Plan: `docs/PLAN.md`.
+  in; Phases 1–4 core complete. The extraction eval loop is done and the corpus is frozen
+  (`2026-10-04_structured.dump` → refreshed `jobmarket_eval`). Next: the agent eval suite, then
+  data hardening → frontend → deployment → re-ingestion → polish. Plan: `docs/PLAN.md`.
 
 ## Phase 1 — Ingestion
 
@@ -32,8 +32,13 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 - [x] `tests/test_normalize.py`, `tests/test_transform.py`, `tests/test_source_adapters.py`
 - [x] Offline fixtures — `tests/fixtures/raw_responses.json` (one response per source) +
       `tests/test_schema.py`
-- [ ] Eval loop — hand-label `evals/gold_labeled.json` on `(source, external_id)`, per-field /
-      `doc_type` / role-alignment script, iterate the prompt to a threshold set after run one
+- [x] Gold labels — `evals/gold_labeled.json` on `(source, external_id)`, LLM-labeled by
+      `evals/label_gold.py` (deepseek-v4-pro, n=3 consensus; held-out fields are board truth).
+      See DECISIONS: eval.
+- [x] Eval loop — `evals/eval_extraction.py` scores per-field / `doc_type` / role-alignment vs
+      `gold_labeled.json`; prompt iterated twice (seniority 68→93%, see DECISIONS: eval)
+- [x] Freeze — re-extract + re-embed the corpus with the improved prompt, re-snapshot to
+      `2026-10-04_structured.dump`, refresh `jobmarket_eval` from it
 
 ## Phase 3 — Storage + retrieval
 
@@ -70,6 +75,7 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Next
 
-1. Hand-label `gold_40_candidates.json` → `gold_labeled.json`, then the extraction eval loop.
+1. Agent eval suite — commit ~15 canned questions + scorer, run 3× each, report pass rate
+   (Stage 1 step 6; the baseline before/after the provider/model swap).
 
 Full order and locked decisions: `docs/PLAN.md`.
