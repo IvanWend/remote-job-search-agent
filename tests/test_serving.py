@@ -14,13 +14,74 @@ from pydantic_ai import (
 
 from src.agent.schema import Answer
 from src.serving.app import app
-from src.serving.sse import sse_event, stream_answer
+from src.serving.sse import sse_event, stream_answer, summarize_tool_result
 
 # Payload values come from the corpus, not invention: gold_40_candidates.json
 # row 1 (hn 48747990, "We The Flywheel") is the posting DECISIONS: schema cites
 # for the Agentic Engineer role and its claude code / cursor / aider stack.
+# similarity is not a gold field (runtime-computed) — any float does.
+_FULL_HIT = {
+    "raw_posting_id": 1234,
+    "role_index": 0,
+    "title": "Agentic Engineer",
+    "company": "We The Flywheel",
+    "location": "REMOTE (worldwide)",
+    "seniority": "unknown",
+    "remote_policy": "remote",
+    "employment_type": "contract",
+    "stack": ["claude code", "cursor", "aider"],
+    "salary_min": None,
+    "salary_max": None,
+    "salary_currency": None,
+    "description": "ship real software with AI coding agents (Claude Code, Cursor, Aider).",
+    "source": "hn",
+    "external_id": "48747990",
+    "similarity": 0.68,
+}
+_PROJECTED_HIT = {
+    "raw_posting_id": 1234,
+    "role_index": 0,
+    "title": "Agentic Engineer",
+    "company": "We The Flywheel",
+    "location": "REMOTE (worldwide)",
+    "seniority": "unknown",
+    "remote_policy": "remote",
+    "stack": ["claude code", "cursor", "aider"],
+    "salary_min": None,
+    "salary_max": None,
+    "salary_currency": None,
+    "source": "hn",
+    "similarity": 0.68,
+}
 _TOOL_CALL = {"name": "vector_search", "args": {"query": "agentic engineer", "limit": 5}}
-_TOOL_RESULT = {"name": "vector_search"}
+_TOOL_RESULT = {"name": "vector_search", "content": [_PROJECTED_HIT]}
+_TOOL_RESULT_FRAME = (
+    'event: tool_result\ndata: {"name": "vector_search", "content": ['
+    '{"raw_posting_id": 1234, "role_index": 0, "title": "Agentic Engineer", '
+    '"company": "We The Flywheel", "location": "REMOTE (worldwide)", '
+    '"seniority": "unknown", "remote_policy": "remote", "stack": ["claude code", '
+    '"cursor", "aider"], "salary_min": null, "salary_max": null, '
+    '"salary_currency": null, "source": "hn", "similarity": 0.68}]}\n\n'
+)
+_ROLE_DETAIL = {
+    "raw_posting_id": 1234,
+    "role_index": 0,
+    "company": "We The Flywheel",
+    "title": "Agentic Engineer",
+    "location": "REMOTE (worldwide)",
+    "seniority": "unknown",
+    "remote_policy": "remote",
+    "employment_type": "contract",
+    "stack": ["claude code", "cursor", "aider"],
+    "salary_min": None,
+    "salary_max": None,
+    "salary_currency": None,
+    "description": "ship real software with AI coding agents (Claude Code, Cursor, Aider).",
+    "source_quotes": {"company": "We The Flywheel"},
+    "source": "hn",
+    "external_id": "48747990",
+}
+_ROLE_DETAIL_TRIMMED = {k: v for k, v in _ROLE_DETAIL.items() if k != "description"}
 _ANSWER_TEXT = "Agentic Engineer roles at We The Flywheel lean on claude code, cursor and aider."
 _ANSWER_EVIDENCE = ["Agentic Engineer at We The Flywheel - claude code, cursor, aider - hn"]
 
@@ -37,7 +98,7 @@ _ANSWER_EVIDENCE = ["Agentic Engineer at We The Flywheel - claude code, cursor, 
                 '"limit": 5}}\n\n'
             ),
         ),
-        ("tool_result", _TOOL_RESULT, 'event: tool_result\ndata: {"name": "vector_search"}\n\n'),
+        ("tool_result", _TOOL_RESULT, _TOOL_RESULT_FRAME),
         (
             "answer",
             {"answer": _ANSWER_TEXT, "evidence": _ANSWER_EVIDENCE},
@@ -109,7 +170,9 @@ def test_stream_answer_maps_events_to_frames() -> None:
             part=cast(Any, SimpleNamespace(tool_name="vector_search", args=_TOOL_CALL["args"])),
             args_valid=True,
         ),
-        FunctionToolResultEvent(part=cast(Any, SimpleNamespace(tool_name="vector_search"))),
+        FunctionToolResultEvent(
+            part=cast(Any, SimpleNamespace(tool_name="vector_search", content=[_FULL_HIT])),
+        ),
         AgentRunResultEvent(result=cast(Any, SimpleNamespace(output=answer))),
     ]
 
@@ -119,7 +182,7 @@ def test_stream_answer_maps_events_to_frames() -> None:
             'data: {"name": "vector_search", "args": {"query": "agentic engineer", '
             '"limit": 5}}\n\n'
         ),
-        'event: tool_result\ndata: {"name": "vector_search"}\n\n',
+        _TOOL_RESULT_FRAME,
         (
             "event: answer\n"
             'data: {"answer": "Agentic Engineer roles at We The Flywheel lean on claude code, '
@@ -127,6 +190,25 @@ def test_stream_answer_maps_events_to_frames() -> None:
             'claude code, cursor, aider - hn"]}\n\n'
         ),
     ]
+
+
+@pytest.mark.parametrize(
+    ("name", "content", "expected"),
+    [
+        ("vector_search", [_FULL_HIT], [_PROJECTED_HIT]),
+        ("role_detail", _ROLE_DETAIL, _ROLE_DETAIL_TRIMMED),
+        ("role_detail", None, None),
+        (
+            "sql_query",
+            [{"skill": "python", "roles": 30, "postings": 25}],
+            [{"skill": "python", "roles": 30, "postings": 25}],
+        ),
+        ("future_tool", {"x": 1}, {"x": 1}),
+        ("vector_search", "error string", "error string"),
+    ],
+)
+def test_summarize_tool_result(name: str, content: object, expected: object) -> None:
+    assert summarize_tool_result(name, content) == expected
 
 
 def test_stream_answer_emits_error_frame() -> None:
