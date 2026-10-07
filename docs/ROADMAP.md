@@ -7,11 +7,9 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Current state (2026-10-07)
 
-- **Phase: 5 — Distribution & ops, reordered to "prove it, then ship".** CI and the MCP server are
-  in; Phases 1–4 core complete. The extraction eval loop is done and the corpus is frozen
-  (`2026-10-04_structured.dump` → refreshed `jobmarket_eval`). The agent eval suite is in
-  (`evals/eval_agent.py`, baseline 45/45). Next: data hardening → frontend → deployment →
-  re-ingestion → polish. Plan: `docs/PLAN.md`.
+- **Phase: 5 — Distribution & ops.** Phases 1–4 complete; Stage 1 (agent eval suite, baseline 45/45)
+  and Stage 2 (data hardening: `currency_enum` validation + NULL-currency caveat) done. Next:
+  frontend → deployment → re-ingestion → polish.
 
 ## Phase 1 — Ingestion
 
@@ -49,18 +47,21 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 - [x] CI — ruff + mypy + pytest over pgvector + curated fixture (`export_ci_fixture.py`)
 - [x] MCP server — `src/mcp/server.py` (FastMCP 1.29), 3 tools, direct DB
-- [ ] Frontend — React + Vite + Tailwind SPA, served from FastAPI `StaticFiles`
-- [ ] Deployment — single VPS + docker-compose (`web` + `ollama`); provider + budget TBD
+- [ ] Frontend — React + Vite + Tailwind SPA (one chat page, hand-written SSE client), served from
+      FastAPI `StaticFiles` mounted only when `dist/` exists (CI has no build)
+- [ ] Rate limit + spend cap + max-turns on the agent loop (before public, non-negotiable)
+- [ ] Packaging — minimal package config (reverses the "not a package" convention; log in DECISIONS)
+- [ ] Deployment — single VPS + docker-compose (`web` + `ollama`); provider + budget TBD;
+      run the agent eval before/after the provider/model swap
+- [ ] Fresh ingest + extract right before deploy (demo freshness)
+- [ ] Scheduled re-ingestion — fix rollup staleness + purge↔refresh ordering first, then cron
 
 ## Phase 6 — Polish
 
-- [ ] README with architecture diagram, eval-results table, demo GIF
-- [ ] Cross-source dedup (fuzzy company+title), trend charts
+- [ ] README with architecture diagram, eval-results table, Known limitations, demo GIF
+- [ ] Cross-source dedup (fuzzy company+title) + trend charts
 - [ ] Hand-roll the validate-and-retry loop to see what `pydantic-ai` hides (see DECISIONS)
 
 ## Next
 
-1. Data hardening — `currency_enum` validation (reject `"xyz" → "XYZ"`) + NULL-currency handling
-   (Stage 2, code-only, post-freeze).
-
-Full order and locked decisions: `docs/PLAN.md`.
+1. Frontend — React + Vite + Tailwind SPA (Phase 5).
