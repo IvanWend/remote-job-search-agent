@@ -5,12 +5,13 @@ A **remote job search agent over heterogeneous boards.**
 **Maintenance rule.** Current state is rewritten from scratch each session, not appended to.
 Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
-## Current state (2026-10-04)
+## Current state (2026-10-07)
 
 - **Phase: 5 — Distribution & ops, reordered to "prove it, then ship".** CI and the MCP server are
   in; Phases 1–4 core complete. The extraction eval loop is done and the corpus is frozen
-  (`2026-10-04_structured.dump` → refreshed `jobmarket_eval`). Next: the agent eval suite, then
-  data hardening → frontend → deployment → re-ingestion → polish. Plan: `docs/PLAN.md`.
+  (`2026-10-04_structured.dump` → refreshed `jobmarket_eval`). The agent eval suite is in
+  (`evals/eval_agent.py`, baseline 45/45). Next: data hardening → frontend → deployment →
+  re-ingestion → polish. Plan: `docs/PLAN.md`.
 
 ## Phase 1 — Ingestion
 
@@ -40,8 +41,8 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 - [x] Tools: `sql_query`, `vector_search`, `role_detail` (`resume_match` → `role_detail`)
 - [x] Agent loop with DeepSeek tool-calling (`output_type=Answer`, sequential tool execution)
-- [ ] Agent eval suite (~15 canned questions) — deferred to Phase 5 deployment (baseline
-      before/after the provider/model swap)
+- [x] Agent eval suite — `evals/eval_agent.py`: 15 questions + scorer, 3× runs; baseline 45/45
+      (before the provider/model swap)
 - [x] FastAPI endpoint with SSE streaming
 
 ## Phase 5 — Distribution & ops
@@ -59,7 +60,7 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Next
 
-1. Agent eval suite — commit ~15 canned questions + scorer, run 3× each, report pass rate
-   (Stage 1 step 6; the baseline before/after the provider/model swap).
+1. Data hardening — `currency_enum` validation (reject `"xyz" → "XYZ"`) + NULL-currency handling
+   (Stage 2, code-only, post-freeze).
 
 Full order and locked decisions: `docs/PLAN.md`.
