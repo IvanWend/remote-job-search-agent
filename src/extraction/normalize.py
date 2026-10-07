@@ -138,6 +138,7 @@ _CURRENCIES: dict[str, str] = {
     "eur": "EUR", "€": "EUR", "gbp": "GBP", "£": "GBP",
     "kzt": "KZT", "₸": "KZT", "uah": "UAH", "₴": "UAH", "byn": "BYN",
     "inr": "INR", "₹": "INR", "jpy": "JPY", "cny": "CNY", "¥": "CNY",
+    "chf": "CHF",
 }  # fmt: skip
 
 _REMOTE: dict[str, RemotePolicy] = {
@@ -427,10 +428,4 @@ def currency_enum(value: str | None) -> str | None:
         return None
 
     key = cleaned.strip().casefold()
-    if key in _CURRENCIES:
-        return _CURRENCIES[key]
-    # A bare three-letter ASCII code passes through as-is; anything else is not
-    # a currency, and returning it would put junk in an ISO 4217 column.
-    if len(key) == 3 and key.isascii() and key.isalpha():
-        return key.upper()
-    return None
+    return _CURRENCIES.get(key)

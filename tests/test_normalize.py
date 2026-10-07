@@ -117,9 +117,8 @@ def test_remote_policy_enum(raw: str | bool, expected: RemotePolicy) -> None:
         ("rur", "RUB"),
         ("$", "USD"),
         (None, None),
-        # Current behaviour, not correct behaviour: the len-3 passthrough cannot
-        # tell a currency from any other three-letter string.
-        ("xyz", "XYZ"),
+        ("chf", "CHF"),
+        ("xyz", None),
         ("Worldwide", None),
     ],
 )
