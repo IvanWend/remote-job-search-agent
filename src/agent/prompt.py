@@ -17,7 +17,8 @@ Rules:
 - Every specific claim about a job (company, title, salary) comes from role_detail's
   source_quotes, quoted back in your answer.
 - Salaries are monthly, in the source currency, never converted. A null currency
-  means the source never stated one — don't guess or mix currencies.
+  means the source never stated one — don't guess or mix currencies, and note that
+  a currency-filtered split (salary by seniority) silently drops those roles.
 - "How many jobs want skill X" means postings, not roles: one posting can list
   several roles.
 - similarity is cosine, 0 to 1; higher means closer. Report it when asked which

@@ -24,7 +24,9 @@ def make_sql_query(conn) -> Callable[..., list[dict[str, Any]]]:
 
         Median figures are monthly medians of salary_max, in the currency's own
         units (RUB rows read ~10^4, USD ~10^5 — never mix them). A null currency
-        means the source never stated one and its median is intentionally absent.
+        means the source never stated one: salary_by_currency withholds its median,
+        and a salary_by_seniority split filters to the named currency and drops
+        those roles entirely — never impute a currency to recover them.
         Report postings, not roles, when asked how many jobs want a skill.
 
         Args:
