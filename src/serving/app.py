@@ -1,11 +1,13 @@
 import os
 from collections.abc import AsyncIterator
+from pathlib import Path
 
 import psycopg
 from anyio import to_thread
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from src.agent.loop import build_agent
@@ -14,6 +16,10 @@ from src.serving.sse import sse_event, stream_answer
 load_dotenv()
 
 url = os.environ.get("DATABASE_URL")
+
+# Served only when the frontend has been built: dist/ is gitignored and CI has
+# no node build, so a fresh clone mounts nothing and /health still answers.
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
 
 class AskRequest(BaseModel):
@@ -54,6 +60,11 @@ def create_app() -> FastAPI:
     @app.post("/ask")
     def ask_post(request: AskRequest):
         return StreamingResponse(_stream(request.question), media_type="text/event-stream")
+
+    # Mounted last so /health, /ask and the docs routes win; StaticFiles(html=True)
+    # serves index.html at "/" for the single-page chat UI. Absent dist/ -> no mount.
+    if FRONTEND_DIST.is_dir():
+        app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")
 
     return app
 
