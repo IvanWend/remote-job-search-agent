@@ -30,6 +30,18 @@ class SenioritySalary(NamedTuple):
     median_max_monthly: int | None
 
 
+class TopSalary(NamedTuple):
+    raw_posting_id: int
+    role_index: int
+    company: str | None
+    title: str | None
+    location: str | None
+    seniority: str
+    salary_min: int | None
+    salary_max: int | None
+    salary_currency: str | None
+
+
 SKILL_FREQUENCY_SQL = """
 SELECT unnest(stack) AS skill,
        count(*) AS roles,
@@ -69,6 +81,20 @@ GROUP BY seniority
 ORDER BY median_max_monthly DESC NULLS LAST, seniority
 """
 
+# The currency filter is not optional, same as the seniority split: a ranking
+# across mixed currencies orders magnitudes, not salaries (500,000 RUB beats
+# 25,000 USD numerically). Rows with no figure at all can't be ranked; a NULL
+# currency never matches, so those roles drop out — never impute one. The
+# ranking itself lives in rank_top_salaries, not the SQL, so it is unit-testable
+# without a database.
+TOP_SALARIES_SQL = """
+SELECT raw_posting_id, role_index, company, title, location, seniority,
+       salary_min, salary_max, salary_currency
+FROM structured_postings
+WHERE (salary_max IS NOT NULL OR salary_min IS NOT NULL)
+  AND salary_currency = %(currency)s
+"""
+
 
 def skill_frequency(conn, limit: int = 20) -> list[SkillCount]:
     with conn.cursor() as cur:
@@ -86,6 +112,26 @@ def salary_by_seniority(conn, currency: str = "USD") -> list[SenioritySalary]:
     with conn.cursor() as cur:
         cur.execute(SALARY_BY_SENIORITY_SQL, {"currency": currency})
         return [SenioritySalary(*row) for row in cur.fetchall()]
+
+
+# "Highest salary" is one rule, fixed in code so the model can never pick a
+# sort key per question: salary_max, falling back to salary_min when max is
+# NULL (a stated floor ranks at its figure, next to ceilings), ties broken by
+# the stable key (raw_posting_id, role_index) so reruns are byte-identical.
+def rank_top_salaries(rows: list[TopSalary], limit: int = 10) -> list[TopSalary]:
+    def key(r: TopSalary) -> tuple[int, int, int]:
+        figure = r.salary_max if r.salary_max is not None else r.salary_min
+        assert figure is not None  # TOP_SALARIES_SQL filters rows with both NULL
+        return (-figure, r.raw_posting_id, r.role_index)
+
+    return sorted(rows, key=key)[:limit]
+
+
+def top_salaries(conn, currency: str = "USD", limit: int = 10) -> list[TopSalary]:
+    with conn.cursor() as cur:
+        cur.execute(TOP_SALARIES_SQL, {"currency": currency})
+        rows = [TopSalary(*row) for row in cur.fetchall()]
+    return rank_top_salaries(rows, limit)
 
 
 def parse_args() -> argparse.Namespace:
