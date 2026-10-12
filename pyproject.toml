@@ -29,8 +29,9 @@ select = ["E", "W", "F", "I", "UP", "B", "ISC"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-# Not an installable package, so imports are `src.…` from the repo root. Without
-# this pytest puts only tests/ on sys.path and `import src` fails.
+# Not an installable package (no [build-system]), so imports are `jobmarket_agent.…`
+# from the repo root; pythonpath also keeps the non-package `evals/` and `tests/`
+# modules on sys.path.
 pythonpath = ["."]
 
 [tool.mypy]

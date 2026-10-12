@@ -12,9 +12,13 @@ from pydantic_ai import Agent
 from pydantic_ai.exceptions import ModelHTTPError
 from pydantic_ai.settings import ModelSettings
 
-from src.extraction.schema import DocType, PostingExtraction, RoleExtraction
-from src.extraction.source_adapters import GroundTruth, apply_ground_truth, to_extraction_input
-from src.extraction.transform import transform
+from jobmarket_agent.extraction.schema import DocType, PostingExtraction, RoleExtraction
+from jobmarket_agent.extraction.source_adapters import (
+    GroundTruth,
+    apply_ground_truth,
+    to_extraction_input,
+)
+from jobmarket_agent.extraction.transform import transform
 
 load_dotenv()
 

@@ -10,8 +10,8 @@ from pydantic_ai import (
 from pydantic_ai.tool_manager import ToolManager
 from pydantic_core import to_jsonable_python
 
-from src.agent.limits import model_settings, usage_limits
-from src.agent.schema import Answer
+from jobmarket_agent.agent.limits import model_settings, usage_limits
+from jobmarket_agent.agent.schema import Answer
 
 _HIT_KEYS = (
     "raw_posting_id",

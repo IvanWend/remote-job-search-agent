@@ -12,9 +12,9 @@ from pydantic_ai import (
     FunctionToolResultEvent,
 )
 
-from src.agent.schema import Answer
-from src.serving.app import app, create_app
-from src.serving.sse import sse_event, stream_answer, summarize_tool_result
+from jobmarket_agent.agent.schema import Answer
+from jobmarket_agent.serving.app import app, create_app
+from jobmarket_agent.serving.sse import sse_event, stream_answer, summarize_tool_result
 
 # Payload values come from the corpus, not invention: gold_40_candidates.json
 # row 1 (hn 48747990, "We The Flywheel") is the posting DECISIONS: schema cites
@@ -238,7 +238,7 @@ def test_ask_requires_query() -> None:
 def test_frontend_mounted_only_when_dist_exists(tmp_path, monkeypatch) -> None:
     # FRONTEND_DIST is read at create_app() time, so a fresh app per case keeps
     # the mount decision isolated from the module-level `app` import.
-    monkeypatch.setattr("src.serving.app.FRONTEND_DIST", tmp_path / "missing")
+    monkeypatch.setattr("jobmarket_agent.serving.app.FRONTEND_DIST", tmp_path / "missing")
     with TestClient(create_app()) as client:
         assert client.get("/").status_code == 404
         assert client.get("/health").status_code == 200
@@ -246,7 +246,7 @@ def test_frontend_mounted_only_when_dist_exists(tmp_path, monkeypatch) -> None:
     dist = tmp_path / "dist"
     dist.mkdir()
     (dist / "index.html").write_text("<!doctype html><title>jobs</title>")
-    monkeypatch.setattr("src.serving.app.FRONTEND_DIST", dist)
+    monkeypatch.setattr("jobmarket_agent.serving.app.FRONTEND_DIST", dist)
     with TestClient(create_app()) as client:
         response = client.get("/")
         assert response.status_code == 200

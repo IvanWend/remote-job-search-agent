@@ -10,9 +10,9 @@ from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from src.agent.loop import build_agent
-from src.serving.rate_limit import RateLimiter
-from src.serving.sse import sse_event, stream_answer
+from jobmarket_agent.agent.loop import build_agent
+from jobmarket_agent.serving.rate_limit import RateLimiter
+from jobmarket_agent.serving.sse import sse_event, stream_answer
 
 load_dotenv()
 

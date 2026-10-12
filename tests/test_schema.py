@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from src.extraction.schema import (
+from jobmarket_agent.extraction.schema import (
     INHERITABLE_FIELDS,
     QUOTE_REQUIRED,
     SALARY_QUOTE_KEY,
@@ -14,7 +14,7 @@ from src.extraction.schema import (
     PostingExtraction,
     RoleExtraction,
 )
-from src.extraction.source_adapters import to_extraction_input
+from jobmarket_agent.extraction.source_adapters import to_extraction_input
 
 # Values come from the corpus, not invention: gold_40_candidates.json rows for
 # hn 48747990 ("We The Flywheel"), habr 1000167887 ("Top Selection", Разработчик

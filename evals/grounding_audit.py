@@ -9,7 +9,7 @@ from typing import Any
 import psycopg
 from dotenv import load_dotenv
 
-from src.extraction.source_adapters import to_extraction_input
+from jobmarket_agent.extraction.source_adapters import to_extraction_input
 
 load_dotenv()
 

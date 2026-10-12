@@ -1,4 +1,4 @@
-from src.agent.loop import build_agent
+from jobmarket_agent.agent.loop import build_agent
 
 
 def test_build_agent_registers_three_tools() -> None:

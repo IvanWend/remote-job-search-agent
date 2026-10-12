@@ -19,7 +19,7 @@ FRONTEND     React + Vite + Tailwind SPA, served from FastAPI StaticFiles
 ```
 
 Four boards, remote only. Corpus size is not the goal — postings older than 90 days are mostly
-filled. Schema and extraction rules live in `db/schema/` and `src/extraction/`, not here. Status:
+filled. Schema and extraction rules live in `db/schema/` and `jobmarket_agent/extraction/`, not here. Status:
 [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Tech stack
@@ -65,15 +65,15 @@ itself; a bare `psql "$DATABASE_URL"` does not — source `.env` first, or the v
 on the host.
 
 ```bash
-uv run python -m src.ingestion.load
-uv run python -m src.ingestion.purge            # dry run
-uv run python -m src.ingestion.purge --apply
-uv run python -m src.extraction.pipeline
-uv run python -m src.storage.embed              # needs Ollama at OLLAMA_BASE_URL
-uv run python -m src.storage.rollups
-uv run python -m src.agent.loop -q "what skills show up most for senior backend roles?"
-uv run uvicorn src.serving.app:app
-uv run python -m src.mcp.server             # stdio; silence means it is waiting
+uv run python -m jobmarket_agent.ingestion.load
+uv run python -m jobmarket_agent.ingestion.purge            # dry run
+uv run python -m jobmarket_agent.ingestion.purge --apply
+uv run python -m jobmarket_agent.extraction.pipeline
+uv run python -m jobmarket_agent.storage.embed              # needs Ollama at OLLAMA_BASE_URL
+uv run python -m jobmarket_agent.storage.rollups
+uv run python -m jobmarket_agent.agent.loop -q "what skills show up most for senior backend roles?"
+uv run uvicorn jobmarket_agent.serving.app:app
+uv run python -m jobmarket_agent.mcp.server             # stdio; silence means it is waiting
 ```
 
 The first Habr ingest is slow (one HTML request per posting). Later runs fetch only new ids.
@@ -95,11 +95,12 @@ Toolchain gate, before any commit:
 
 ```bash
 uv run pre-commit run --all-files
-uv run ruff check src/ evals/ tests/ && uv run mypy src/ tests/ && uv run pytest -q
+uv run ruff check jobmarket_agent/ evals/ tests/ && uv run mypy jobmarket_agent/ tests/ && uv run pytest -q
 ```
 
-Install the git hook once: `uv run pre-commit install`. `pytest` needs `pythonpath = ["."]` — nothing
-is installed (no `[build-system]`), so imports are `src.…` from the repo root.
+Install the git hook once: `uv run pre-commit install`. The project is installable (`[build-system]`
+in `pyproject.toml`), so `uv run` installs it editable and `import jobmarket_agent` resolves;
+`pytest` keeps `pythonpath = ["."]` for the non-package `evals/` and `tests/` modules.
 
 If `docker compose up` cannot bind 5432, a Windows Postgres service owns the port
 (`Get-Service *postgres*` in an elevated PowerShell). If Ollama is on the Windows host, reach it at
@@ -124,7 +125,7 @@ and an `env` block, under a key the host reads.
   "mcpServers": {
     "job-market": {
       "command": "/absolute/path/to/uv",
-      "args": ["run", "--directory", "/absolute/path/to/repo", "python", "-m", "src.mcp.server"],
+      "args": ["run", "--directory", "/absolute/path/to/repo", "python", "-m", "jobmarket_agent.mcp.server"],
       "env": {
         "DATABASE_URL": "postgresql://jobmarket:…@localhost:5432/jobmarket",
         "OLLAMA_BASE_URL": "http://localhost:11434"
@@ -146,7 +147,7 @@ pyproject.toml         # deps (uv) + ruff/mypy/pytest; uv.lock is committed
 docker-compose.yml     # Postgres 17 + pgvector; ./init mounted for first boot
 init/                  # first-boot only — vector + pg_trgm
 db/schema/             # re-runnable DDL, 001–010
-src/
+jobmarket_agent/
   ingestion/           # four board clients, load, purge
   extraction/          # schema, transform, pipeline
   storage/             # embed, vector search, analytics, rollups

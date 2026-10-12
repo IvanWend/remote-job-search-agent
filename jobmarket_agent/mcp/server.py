@@ -5,7 +5,12 @@ import psycopg
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
-from src.agent.tools import QueryName, make_role_detail, make_sql_query, make_vector_search
+from jobmarket_agent.agent.tools import (
+    QueryName,
+    make_role_detail,
+    make_sql_query,
+    make_vector_search,
+)
 
 mcp = FastMCP("job-market")
 

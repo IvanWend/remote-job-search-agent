@@ -4,7 +4,7 @@ import pytest
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.types import Tool
 
-from src.mcp.server import mcp, sql_query
+from jobmarket_agent.mcp.server import mcp, sql_query
 
 
 def _listed() -> dict[str, Tool]:

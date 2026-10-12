@@ -8,8 +8,8 @@ from typing import NamedTuple
 import psycopg
 from dotenv import load_dotenv
 
-from src.agent.loop import ask, build_agent
-from src.storage import analytics
+from jobmarket_agent.agent.loop import ask, build_agent
+from jobmarket_agent.storage import analytics
 
 load_dotenv()
 

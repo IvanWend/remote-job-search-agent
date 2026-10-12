@@ -5,9 +5,9 @@ from collections import defaultdict
 
 from dotenv import load_dotenv
 
-from src.extraction.pipeline import build_agent, extract
-from src.extraction.prompt import SYSTEM_PROMPT
-from src.extraction.source_adapters import to_extraction_input
+from jobmarket_agent.extraction.pipeline import build_agent, extract
+from jobmarket_agent.extraction.prompt import SYSTEM_PROMPT
+from jobmarket_agent.extraction.source_adapters import to_extraction_input
 
 load_dotenv()
 

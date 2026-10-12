@@ -5,7 +5,7 @@ import os
 import psycopg
 from dotenv import load_dotenv
 
-from src.ingestion.retention import CUT_SOURCES, WINDOW_DAYS
+from jobmarket_agent.ingestion.retention import CUT_SOURCES, WINDOW_DAYS
 
 load_dotenv()
 

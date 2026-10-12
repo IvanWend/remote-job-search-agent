@@ -1,6 +1,6 @@
 import pytest
 
-from src.extraction.transform import resolve_salary
+from jobmarket_agent.extraction.transform import resolve_salary
 
 # Real bands and quotes from the corpus. The first element of each case is what
 # the model put in the four salary_* fields, the second what it quoted.

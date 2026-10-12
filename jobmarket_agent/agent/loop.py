@@ -8,10 +8,10 @@ from pydantic_ai import Agent, AgentRunResult
 from pydantic_ai.messages import ToolCallPart
 from pydantic_ai.tool_manager import ToolManager
 
-from src.agent.limits import model_settings, usage_limits
-from src.agent.prompt import SYSTEM_PROMPT
-from src.agent.schema import Answer
-from src.agent.tools import make_role_detail, make_sql_query, make_vector_search
+from jobmarket_agent.agent.limits import model_settings, usage_limits
+from jobmarket_agent.agent.prompt import SYSTEM_PROMPT
+from jobmarket_agent.agent.schema import Answer
+from jobmarket_agent.agent.tools import make_role_detail, make_sql_query, make_vector_search
 
 load_dotenv()
 

@@ -37,8 +37,8 @@ jobs:
 
       - run: uv sync --locked
 
-      - run: uv run ruff check src/ evals/ tests/
-      - run: uv run mypy src/ tests/
+      - run: uv run ruff check jobmarket_agent/ evals/ tests/
+      - run: uv run mypy jobmarket_agent/ tests/
 
       # psycopg is already a dependency; applying SQL over it avoids an apt
       # install of postgresql-client. autocommit=True so the schema files' own

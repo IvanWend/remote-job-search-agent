@@ -7,7 +7,7 @@ from typing import NamedTuple
 import psycopg
 from dotenv import load_dotenv
 
-from src.storage.embed import QUERY_INSTRUCTION, embed, to_vector_text
+from jobmarket_agent.storage.embed import QUERY_INSTRUCTION, embed, to_vector_text
 
 load_dotenv()
 

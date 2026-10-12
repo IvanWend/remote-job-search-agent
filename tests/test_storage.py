@@ -1,7 +1,7 @@
 import pytest
 
-from src.storage.analytics import TopSalary, rank_top_salaries
-from src.storage.embed import to_vector_text
+from jobmarket_agent.storage.analytics import TopSalary, rank_top_salaries
+from jobmarket_agent.storage.embed import to_vector_text
 
 
 # Serializer output format only — the psycopg round-trip is already proven by

@@ -13,7 +13,8 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
   traces and evidence hidden). Salary-ranking bug fixed: `top_salaries` named query + fixed
   ranking rule (see DECISIONS: Agent); eval now 18 questions, 53/54 on the current model. Agent
   guardrails done this session: max-turns + token spend cap (`usage_limits`) and a per-IP rate
-  limit on `/ask`. Next: packaging → deployment → re-ingestion → polish.
+  limit on `/ask`. Packaging done: installable now (hatchling, import name `jobmarket_agent`,
+  flat layout — see DECISIONS: Packaging). Next: deployment → re-ingestion → polish.
 
 ## Phase 1 — Ingestion
 
@@ -50,11 +51,11 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 ## Phase 5 — Distribution & ops
 
 - [x] CI — ruff + mypy + pytest over pgvector + curated fixture (`export_ci_fixture.py`)
-- [x] MCP server — `src/mcp/server.py` (FastMCP 1.29), 3 tools, direct DB
+- [x] MCP server — `jobmarket_agent/mcp/server.py` (FastMCP 1.29), 3 tools, direct DB
 - [x] Frontend — React + Vite + Tailwind SPA (one chat page, hand-written SSE client), served from
       FastAPI `StaticFiles` mounted only when `dist/` exists (CI has no build)
 - [x] Rate limit + spend cap + max-turns on the agent loop (before public, non-negotiable)
-- [ ] Packaging — minimal package config (reverses the "not a package" convention; log in DECISIONS)
+- [x] Packaging — installable (hatchling + `jobmarket_agent` flat layout); see DECISIONS: Packaging
 - [ ] Deployment — single VPS + docker-compose (`web` + `ollama`); provider + budget TBD;
       run the agent eval before/after the provider/model swap
 - [ ] Fresh ingest + extract right before deploy (demo freshness)
@@ -68,5 +69,4 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Next
 
-1. Packaging — minimal package config (Phase 5).
-2. Deployment — single VPS + docker-compose (Phase 5).
+1. Deployment — single VPS + docker-compose (Phase 5).

@@ -10,16 +10,16 @@ from typing import NamedTuple
 import psycopg
 from dotenv import load_dotenv
 
-from src.ingestion.habr_client import HABR_DELAY_S, HABR_LIST_URL
-from src.ingestion.habr_client import fetch_description_html as fetch_habr_description
-from src.ingestion.habr_client import fetch_vacancy_cards as fetch_habr_cards
-from src.ingestion.habr_client import new_session as new_habr_session
-from src.ingestion.hn_client import HNThread, fetch_thread, find_latest_hiring_thread
-from src.ingestion.remotive_client import REMOTIVE_ENDPOINT_URL
-from src.ingestion.remotive_client import fetch_latest_jobs as fetch_remotive_jobs
-from src.ingestion.retention import WINDOW_DAYS, window_cutoff
-from src.ingestion.web3_client import WEB3_ENDPOINT_URL
-from src.ingestion.web3_client import fetch_latest_jobs as fetch_web3_jobs
+from jobmarket_agent.ingestion.habr_client import HABR_DELAY_S, HABR_LIST_URL
+from jobmarket_agent.ingestion.habr_client import fetch_description_html as fetch_habr_description
+from jobmarket_agent.ingestion.habr_client import fetch_vacancy_cards as fetch_habr_cards
+from jobmarket_agent.ingestion.habr_client import new_session as new_habr_session
+from jobmarket_agent.ingestion.hn_client import HNThread, fetch_thread, find_latest_hiring_thread
+from jobmarket_agent.ingestion.remotive_client import REMOTIVE_ENDPOINT_URL
+from jobmarket_agent.ingestion.remotive_client import fetch_latest_jobs as fetch_remotive_jobs
+from jobmarket_agent.ingestion.retention import WINDOW_DAYS, window_cutoff
+from jobmarket_agent.ingestion.web3_client import WEB3_ENDPOINT_URL
+from jobmarket_agent.ingestion.web3_client import fetch_latest_jobs as fetch_web3_jobs
 
 load_dotenv()
 
