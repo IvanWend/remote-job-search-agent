@@ -5,12 +5,13 @@ from pathlib import Path
 import psycopg
 from anyio import to_thread
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from src.agent.loop import build_agent
+from src.serving.rate_limit import RateLimiter
 from src.serving.sse import sse_event, stream_answer
 
 load_dotenv()
@@ -32,6 +33,11 @@ def _connect() -> psycopg.Connection:
     return psycopg.connect(url)
 
 
+def _int(name: str, default: int) -> int:
+    raw = os.environ.get(name)
+    return int(raw) if raw else default
+
+
 async def _stream(question: str) -> AsyncIterator[str]:
     conn: psycopg.Connection | None = None
     try:
@@ -46,18 +52,23 @@ async def _stream(question: str) -> AsyncIterator[str]:
             await to_thread.run_sync(conn.close)
 
 
-def create_app() -> FastAPI:
+def create_app(rate_limiter: RateLimiter | None = None) -> FastAPI:
+    if rate_limiter is None:
+        rate_limiter = RateLimiter(
+            max_requests=_int("RATE_LIMIT_MAX", 30),
+            window_seconds=_int("RATE_LIMIT_WINDOW_SECONDS", 60),
+        )
     app = FastAPI()
 
     @app.get("/health")
     def health():
         return {"status": "ok"}
 
-    @app.get("/ask")
+    @app.get("/ask", dependencies=[Depends(rate_limiter)])
     def ask_get(q: str):
         return StreamingResponse(_stream(q), media_type="text/event-stream")
 
-    @app.post("/ask")
+    @app.post("/ask", dependencies=[Depends(rate_limiter)])
     def ask_post(request: AskRequest):
         return StreamingResponse(_stream(request.question), media_type="text/event-stream")
 
