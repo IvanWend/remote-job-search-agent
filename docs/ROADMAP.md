@@ -11,10 +11,11 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
   agent eval suite (baseline 45/45), data hardening (`currency_enum` + NULL-currency caveat), and
   the frontend, now a chat-assistant UI (turns thread, one-line tool status, markdown answer;
   traces and evidence hidden). Salary-ranking bug fixed: `top_salaries` named query + fixed
-  ranking rule (see DECISIONS: Agent); eval now 18 questions, 53/54 on the current model. Agent
-  guardrails done this session: max-turns + token spend cap (`usage_limits`) and a per-IP rate
-  limit on `/ask`. Packaging done: installable now (hatchling, import name `jobmarket_agent`,
-  flat layout — see DECISIONS: Packaging). Next: deployment → re-ingestion → polish.
+  ranking rule (see DECISIONS: Agent); eval now 18 questions, 51/54 on the current model (`i1`
+  injection + `x3` RU-salary are flaky — see DECISIONS: Still open). Agent guardrails done this
+  session: max-turns + token spend cap (`usage_limits`) and a per-IP rate limit on `/ask`.
+  Packaging done: installable now (hatchling, import name `jobmarket_agent`, flat layout — see
+  DECISIONS: Packaging). Fresh ingest + extract done — 1,422/1,422 ok, 1,973 roles. Next: deployment.
 
 ## Phase 1 — Ingestion
 
@@ -56,9 +57,9 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
       FastAPI `StaticFiles` mounted only when `dist/` exists (CI has no build)
 - [x] Rate limit + spend cap + max-turns on the agent loop (before public, non-negotiable)
 - [x] Packaging — installable (hatchling + `jobmarket_agent` flat layout); see DECISIONS: Packaging
+- [x] Fresh ingest + extract right before deploy (demo freshness)
 - [ ] Deployment — single VPS + docker-compose (`web` + `ollama`); provider + budget TBD;
       run the agent eval before/after the provider/model swap
-- [ ] Fresh ingest + extract right before deploy (demo freshness)
 - [ ] Scheduled re-ingestion — fix rollup staleness + purge↔refresh ordering first, then cron
 
 ## Phase 6 — Polish
@@ -69,4 +70,5 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Next
 
-1. Deployment — single VPS + docker-compose (Phase 5).
+1. Deployment — single VPS + docker-compose (`web` + `ollama`); provider + budget TBD, run the
+   agent eval before/after the provider/model swap (Phase 5).

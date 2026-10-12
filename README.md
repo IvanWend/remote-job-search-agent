@@ -35,7 +35,7 @@ filled. Schema and extraction rules live in `db/schema/` and `jobmarket_agent/ex
 | API | FastAPI, SSE streaming |
 | Frontend | React + Vite + Tailwind — single-page chat UI, hand-written SSE client |
 | MCP | FastMCP stdio — same three tools, no DeepSeek key |
-| Tracing | Langfuse (self-hosted, Docker) |
+| Tracing | Langfuse (cloud — us.cloud.langfuse.com) |
 | Orchestration | Docker Compose |
 | Testing / evals | pytest + custom eval scripts + gold-set JSON |
 
