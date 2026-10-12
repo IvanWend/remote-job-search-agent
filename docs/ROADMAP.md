@@ -41,8 +41,8 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 - [x] Tools: `sql_query`, `vector_search`, `role_detail` (`resume_match` → `role_detail`)
 - [x] Agent loop with DeepSeek tool-calling (`output_type=Answer`, sequential tool execution)
-- [x] Agent eval suite — `evals/eval_agent.py`: 15 questions + scorer, 3× runs; baseline 45/45
-      (before the provider/model swap)
+- [x] Agent eval suite — `evals/eval_agent.py`: 18 questions + scorer, 3× runs; baseline 45/45 on
+      the original 15 (before the provider/model swap), then +d9/x2/x3 for the salary-ranking fix
 - [x] FastAPI endpoint with SSE streaming
 
 ## Phase 5 — Distribution & ops
