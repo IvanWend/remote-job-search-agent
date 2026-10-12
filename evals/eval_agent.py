@@ -100,6 +100,22 @@ def _grade_d8(conn, answer: str, evidence: list[str]) -> bool:
     return n is not None and n in _ints(answer)
 
 
+# "Russia-based" resolves to salary_currency = 'RUB' (location is free text;
+# the RUB corpus is Habr). The frozen snapshot's RUB top-1 (raw_posting_id
+# 13489) has salary_max NULL, so these three graders are also the NULL-max
+# regression case: a max-only ranking lands on BASIS, a min-only on a tie the
+# key breaks. Company OR title because an EN answer may keep either verbatim.
+def _grade_top_rub(conn, answer: str, evidence: list[str]) -> bool:
+    top = analytics.top_salaries(conn, "RUB", limit=1)[0]
+    return any(_contains(answer, n) for n in (top.company, top.title) if n)
+
+
+def _grade_d9(conn, answer: str, evidence: list[str]) -> bool:
+    top = analytics.top_salaries(conn, "RUB", limit=1)[0]
+    figure = top.salary_max if top.salary_max is not None else top.salary_min
+    return figure is not None and _grade_top_rub(conn, answer, evidence) and figure in _ints(answer)
+
+
 # --- semantic graders ------------------------------------------------------
 # Provenance, not correctness: the answer must name a *real* row satisfying the
 # constraint, not a hallucinated company. Substring match, casefolded, so
@@ -216,6 +232,14 @@ QUESTIONS: list[Question] = [
         "How many roles have a stated salary in USD?",
         _grade_d8,
     ),
+    Question(
+        "d9",
+        "deterministic",
+        "highest RUB salary + figure (NULL max)",
+        "Which posting has the highest salary stated in RUB, "
+        "and what monthly figure does it state?",
+        _grade_d9,
+    ),
     # semantic — graded on provenance
     Question(
         "s1",
@@ -270,6 +294,22 @@ QUESTIONS: list[Question] = [
         "most-common skill (Russian)",
         "Какой навык упоминается в наибольшем числе ролей?",
         _grade_x1,
+    ),
+    # Same question, two languages: the grader pins one DB-derived top-1, so
+    # both must name the same posting on every run.
+    Question(
+        "x2",
+        "cross-language",
+        "highest-salary posting in Russia (EN)",
+        "Posting in Russia with the highest salary",
+        _grade_top_rub,
+    ),
+    Question(
+        "x3",
+        "cross-language",
+        "highest-salary posting in Russia (RU)",
+        "Вакансии в россии с самой высокой зп",
+        _grade_top_rub,
     ),
 ]
 
