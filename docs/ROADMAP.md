@@ -5,13 +5,15 @@ A **remote job search agent over heterogeneous boards.**
 **Maintenance rule.** Current state is rewritten from scratch each session, not appended to.
 Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
-## Current state (2026-10-11)
+## Current state (2026-10-12)
 
 - **Phase: 5 — Distribution & ops.** Phases 1–4 complete; Stages 1–3 done plus the UI rework:
   agent eval suite (baseline 45/45), data hardening (`currency_enum` + NULL-currency caveat), and
   the frontend, now a chat-assistant UI (turns thread, one-line tool status, markdown answer;
-  traces and evidence hidden). Next: rate-limit/spend-cap → packaging → deployment → re-ingestion
-  → polish.
+  traces and evidence hidden). Salary-ranking bug fixed: `top_salaries` named query + fixed
+  ranking rule (see DECISIONS: Agent); eval now 18 questions, 53/54 on the current model. Agent
+  guardrails done this session: max-turns + token spend cap (`usage_limits`) and a per-IP rate
+  limit on `/ask`. Next: packaging → deployment → re-ingestion → polish.
 
 ## Phase 1 — Ingestion
 
@@ -51,7 +53,7 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 - [x] MCP server — `src/mcp/server.py` (FastMCP 1.29), 3 tools, direct DB
 - [x] Frontend — React + Vite + Tailwind SPA (one chat page, hand-written SSE client), served from
       FastAPI `StaticFiles` mounted only when `dist/` exists (CI has no build)
-- [ ] Rate limit + spend cap + max-turns on the agent loop (before public, non-negotiable)
+- [x] Rate limit + spend cap + max-turns on the agent loop (before public, non-negotiable)
 - [ ] Packaging — minimal package config (reverses the "not a package" convention; log in DECISIONS)
 - [ ] Deployment — single VPS + docker-compose (`web` + `ollama`); provider + budget TBD;
       run the agent eval before/after the provider/model swap
@@ -66,5 +68,5 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Next
 
-1. Rate limit + spend cap + max-turns on the agent loop (Phase 5).
-2. Packaging — minimal package config (Phase 5).
+1. Packaging — minimal package config (Phase 5).
+2. Deployment — single VPS + docker-compose (Phase 5).
