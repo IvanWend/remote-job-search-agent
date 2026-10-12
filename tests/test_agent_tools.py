@@ -69,6 +69,7 @@ def test_sql_query_schema_contract() -> None:
         "skill_frequency",
         "salary_by_currency",
         "salary_by_seniority",
+        "top_salaries",
     ]
     assert set(props) == {"query", "limit", "currency"}
 
@@ -111,6 +112,31 @@ def test_salary_by_seniority_shape(eval_conn) -> None:
     assert rows
     for r in rows:
         assert set(r) == {"seniority", "roles", "with_salary", "median_max_monthly"}
+
+
+_TOP_SALARY_KEYS = {
+    "raw_posting_id",
+    "role_index",
+    "company",
+    "title",
+    "location",
+    "seniority",
+    "salary_min",
+    "salary_max",
+    "salary_currency",
+}
+
+
+def test_top_salaries_shape(eval_conn) -> None:
+    rows = make_sql_query(eval_conn)(query="top_salaries", currency="RUB", limit=5)
+    assert 0 < len(rows) <= 5
+    for r in rows:
+        assert set(r) == _TOP_SALARY_KEYS
+        assert r["salary_currency"] == "RUB"
+    # rank_top_salaries orders by COALESCE(salary_max, salary_min) DESC with the
+    # key breaking ties, so the figures are non-increasing.
+    figures = [r["salary_max"] if r["salary_max"] is not None else r["salary_min"] for r in rows]
+    assert all(figures[i] >= figures[i + 1] for i in range(len(figures) - 1))
 
 
 def test_vector_search_schema_contract() -> None:

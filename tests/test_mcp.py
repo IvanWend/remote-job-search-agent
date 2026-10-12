@@ -22,6 +22,7 @@ def test_tool_schemas() -> None:
         "skill_frequency",
         "salary_by_currency",
         "salary_by_seniority",
+        "top_salaries",
     ]
     assert sql["properties"]["limit"]["default"] == 20
     assert sql["properties"]["currency"]["default"] == "USD"

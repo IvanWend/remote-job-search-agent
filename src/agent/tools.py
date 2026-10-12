@@ -4,10 +4,10 @@ from typing import Any, Literal, assert_never
 from src.storage import analytics, role
 from src.storage.vector_search import run
 
-# The whitelist is the type: the model can only name one of these three, and
+# The whitelist is the type: the model can only name one of these four, and
 # pydantic-ai rejects anything else before it reaches this function. No SQL
 # string ever crosses the model -> DB boundary.
-QueryName = Literal["skill_frequency", "salary_by_currency", "salary_by_seniority"]
+QueryName = Literal["skill_frequency", "salary_by_currency", "salary_by_seniority", "top_salaries"]
 
 
 def make_sql_query(conn) -> Callable[..., list[dict[str, Any]]]:
@@ -28,11 +28,17 @@ def make_sql_query(conn) -> Callable[..., list[dict[str, Any]]]:
         and a salary_by_seniority split filters to the named currency and drops
         those roles entirely — never impute a currency to recover them.
         Report postings, not roles, when asked how many jobs want a skill.
+        top_salaries ranks individual roles by salary_max, falling back to
+        salary_min when max is null, ties broken by posting id — use it for
+        "highest / best-paid" questions; vector_search ranks by similarity and
+        cannot rank by salary. It filters to the named currency: pass the
+        currency the question implies (e.g. RUB for Russia).
 
         Args:
-            query: Which of the three hand-written analytics shapes to run.
-            limit: Top-N skills returned, used only by skill_frequency.
-            currency: Currency for the salary-by-seniority split, used only by that query.
+            query: Which of the four hand-written analytics shapes to run.
+            limit: Top-N rows returned, used by skill_frequency and top_salaries.
+            currency: Currency for the salary splits and ranking, used by
+                salary_by_seniority and top_salaries.
         """
         if query == "skill_frequency":
             return [r._asdict() for r in analytics.skill_frequency(conn, limit)]
@@ -40,6 +46,8 @@ def make_sql_query(conn) -> Callable[..., list[dict[str, Any]]]:
             return [r._asdict() for r in analytics.salary_by_currency(conn)]
         if query == "salary_by_seniority":
             return [r._asdict() for r in analytics.salary_by_seniority(conn, currency)]
+        if query == "top_salaries":
+            return [r._asdict() for r in analytics.top_salaries(conn, currency, limit)]
         assert_never(query)
 
     return sql_query
