@@ -148,7 +148,11 @@ class _StubAgent:
         return None
 
     def run_stream_events(
-        self, _question: str, *, model_settings: object | None = None
+        self,
+        _question: str,
+        *,
+        model_settings: object | None = None,
+        usage_limits: object | None = None,
     ) -> _StubEvents:
         return self._events
 

@@ -6,11 +6,11 @@ from pydantic_ai import (
     AgentRunResultEvent,
     FunctionToolCallEvent,
     FunctionToolResultEvent,
-    ModelSettings,
 )
 from pydantic_ai.tool_manager import ToolManager
 from pydantic_core import to_jsonable_python
 
+from src.agent.limits import model_settings, usage_limits
 from src.agent.schema import Answer
 
 _HIT_KEYS = (
@@ -35,12 +35,13 @@ def sse_event(event: str, data: object) -> str:
 
 
 async def stream_answer(agent: Agent[None, Answer], question: str) -> AsyncIterator[str]:
-    model_settings = ModelSettings(timeout=60, temperature=0)
     with ToolManager.parallel_execution_mode("sequential"):
         async with agent:
             try:
                 async with agent.run_stream_events(
-                    question, model_settings=model_settings
+                    question,
+                    model_settings=model_settings(),
+                    usage_limits=usage_limits(),
                 ) as events:
                     async for ev in events:
                         if isinstance(ev, FunctionToolCallEvent):

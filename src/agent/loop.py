@@ -6,9 +6,9 @@ import psycopg
 from dotenv import load_dotenv
 from pydantic_ai import Agent, AgentRunResult
 from pydantic_ai.messages import ToolCallPart
-from pydantic_ai.settings import ModelSettings
 from pydantic_ai.tool_manager import ToolManager
 
+from src.agent.limits import model_settings, usage_limits
 from src.agent.prompt import SYSTEM_PROMPT
 from src.agent.schema import Answer
 from src.agent.tools import make_role_detail, make_sql_query, make_vector_search
@@ -32,9 +32,12 @@ def build_agent(
 
 
 async def ask(agent: Agent[None, Answer], question: str) -> AgentRunResult[Answer]:
-    model_settings = ModelSettings(timeout=60, temperature=0)
     with ToolManager.parallel_execution_mode("sequential"):
-        return await agent.run(user_prompt=question, model_settings=model_settings)
+        return await agent.run(
+            user_prompt=question,
+            model_settings=model_settings(),
+            usage_limits=usage_limits(),
+        )
 
 
 async def main() -> None:
