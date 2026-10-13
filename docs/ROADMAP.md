@@ -5,17 +5,25 @@ A **remote job search agent over heterogeneous boards.**
 **Maintenance rule.** Current state is rewritten from scratch each session, not appended to.
 Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
-## Current state (2026-10-12)
+## Current state (2026-10-13)
 
-- **Phase: 5 — Distribution & ops.** Phases 1–4 complete; Stages 1–3 done plus the UI rework:
-  agent eval suite (baseline 45/45), data hardening (`currency_enum` + NULL-currency caveat), and
-  the frontend, now a chat-assistant UI (turns thread, one-line tool status, markdown answer;
-  traces and evidence hidden). Salary-ranking bug fixed: `top_salaries` named query + fixed
-  ranking rule (see DECISIONS: Agent); eval now 18 questions, 51/54 on the current model (`i1`
-  injection + `x3` RU-salary are flaky — see DECISIONS: Still open). Agent guardrails done this
-  session: max-turns + token spend cap (`usage_limits`) and a per-IP rate limit on `/ask`.
-  Packaging done: installable now (hatchling, import name `jobmarket_agent`, flat layout — see
-  DECISIONS: Packaging). Fresh ingest + extract done — 1,422/1,422 ok, 1,973 roles. Next: deployment.
+- **Re-scoped: production labor-market analyzer** (query box + monthly report + RU/EN + deployed
+  demo). The full forward plan lives in **`docs/PLAN.md`** — this file stays the done-checklist.
+- Phases 1–4 complete. Phase 5 so far: agent eval suite (18 questions, 51/54 — `i1` injection +
+  `x3` RU-salary are flaky, see DECISIONS: Still open), guardrails (`usage_limits` + per-IP rate
+  limit; total-token cap loosened 50k→200k after live queries hit it), packaging (hatchling,
+  import name `jobmarket_agent`), MCP server. Fresh ingest + extract done — 1,422/1,422 ok,
+  1,973 roles over 1,390 postings.
+- **Frontend rebuilt as the Techanizer UI** (Figma design merged into `frontend/`, npm; the
+  `figma_generated_ui/` download discarded after the merge): query box + Analysis/Monthly-report
+  tabs, RU/EN chrome, dark/light; Analysis renders structured tool output (skill bars, salary
+  tables, role cards) and highlights skill names inline via a surface-form dictionary; Monthly
+  report is a placeholder until the report job lands.
+- Review findings locked into PLAN.md: retention flips from 90-day-delete to keep-everything
+  (`in_window` = current), skill tokens are fragmented (alias v2), salary coverage ~29%, HN loader
+  only fetches the latest thread, `/ask` has no auth, no eval gating in CI.
+- **Structured answer pulled forward to PLAN step 1**: every visual bug so far came from the UI
+  inferring layout from untyped tool JSON per query; the typed contract replaces it.
 
 ## Phase 1 — Ingestion
 
@@ -53,8 +61,10 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 - [x] CI — ruff + mypy + pytest over pgvector + curated fixture (`export_ci_fixture.py`)
 - [x] MCP server — `jobmarket_agent/mcp/server.py` (FastMCP 1.29), 3 tools, direct DB
-- [x] Frontend — React + Vite + Tailwind SPA (one chat page, hand-written SSE client), served from
-      FastAPI `StaticFiles` mounted only when `dist/` exists (CI has no build)
+- [x] Frontend — Techanizer UI (React + Vite + Tailwind v4, Figma design merged): query box,
+      Analysis/Monthly tabs, RU/EN chrome, dark/light; renders structured tool output +
+      highlighted prose; hand-written SSE client; served from FastAPI `StaticFiles` mounted only
+      when `dist/` exists (CI has no build)
 - [x] Rate limit + spend cap + max-turns on the agent loop (before public, non-negotiable)
 - [x] Packaging — installable (hatchling + `jobmarket_agent` flat layout); see DECISIONS: Packaging
 - [x] Fresh ingest + extract right before deploy (demo freshness)
@@ -70,5 +80,5 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Next
 
-1. Deployment — single VPS + docker-compose (`web` + `ollama`); provider + budget TBD, run the
-   agent eval before/after the provider/model swap (Phase 5).
+1. Follow `docs/PLAN.md` build order, step 1: the structured answer contract — schema →
+   prompt → SSE frame → UI contract render → eval-grader rewrite.
