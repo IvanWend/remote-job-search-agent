@@ -7,7 +7,7 @@ def test_usage_limits_defaults() -> None:
     limits = usage_limits()
     assert limits.request_limit == 8
     assert limits.tool_calls_limit == 12
-    assert limits.total_tokens_limit == 50_000
+    assert limits.total_tokens_limit == 200_000
     assert limits.output_tokens_limit == 4_000
 
 

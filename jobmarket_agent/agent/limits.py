@@ -14,10 +14,10 @@ def usage_limits() -> UsageLimits:
     # spend proxy: the model registry carries no DeepSeek cost, so cost_limit
     # would warn and never fire (see DECISIONS: Agent).
     return UsageLimits(
-        request_limit=_int("AGENT_MAX_REQUESTS", 8),
-        tool_calls_limit=_int("AGENT_MAX_TOOL_CALLS", 12),
-        total_tokens_limit=_int("AGENT_TOTAL_TOKENS", 50_000),
-        output_tokens_limit=_int("AGENT_OUTPUT_TOKENS", 4_000),
+        request_limit=_int("AGENT_MAX_REQUESTS", 10),
+        tool_calls_limit=_int("AGENT_MAX_TOOL_CALLS", 15),
+        total_tokens_limit=_int("AGENT_TOTAL_TOKENS", 300_000),
+        output_tokens_limit=_int("AGENT_OUTPUT_TOKENS", 10_000),
     )
 
 
