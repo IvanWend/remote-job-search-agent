@@ -5,10 +5,10 @@ from jobmarket_agent.agent.limits import model_settings, usage_limits
 
 def test_usage_limits_defaults() -> None:
     limits = usage_limits()
-    assert limits.request_limit == 8
-    assert limits.tool_calls_limit == 12
-    assert limits.total_tokens_limit == 200_000
-    assert limits.output_tokens_limit == 4_000
+    assert limits.request_limit == 10
+    assert limits.tool_calls_limit == 15
+    assert limits.total_tokens_limit == 300_000
+    assert limits.output_tokens_limit == 10_000
 
 
 def test_usage_limits_env_override(monkeypatch) -> None:
