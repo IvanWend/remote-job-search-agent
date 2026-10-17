@@ -9,16 +9,24 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 - **Re-scoped: production labor-market analyzer** (query box + monthly report + RU/EN + deployed
   demo). The full forward plan lives in **`docs/PLAN.md`** — this file stays the done-checklist.
-- Phases 1–4 complete. Phase 5 so far: agent eval suite (18 questions, 51/54 — `i1` injection +
-  `x3` RU-salary are flaky, see DECISIONS: Still open), guardrails (`usage_limits` + per-IP rate
-  limit; total-token cap loosened 50k→200k after live queries hit it), packaging (hatchling,
+- Phases 1–4 complete. Phase 5 so far: agent eval suite (20 questions, 59/60 — only `i1`
+  injection is flaky at 2/3; `x3` was retired), guardrails (`usage_limits` + per-IP rate
+  limit; total-token cap loosened 50k→300k after live queries hit it), packaging (hatchling,
   import name `jobmarket_agent`), MCP server. Fresh ingest + extract done — 1,422/1,422 ok,
   1,973 roles over 1,390 postings.
+- **Structured answer contract landed (PLAN step 1).** The agent returns a typed `Answer`
+  (`headline`, `key_finding`, `tables` ≤3, `quotes` ≤5) and the UI renders that object only —
+  the tool-result panels and call/result pairing are deleted. Eval graders rewritten over the
+  contract: numeric graders read `tables` + prose ints, a new `v1` verbatim grader checks every
+  `Quote.text` is a substring of the role's `source_quotes`/raw text (3/3 — better than the
+  predicted ~2.7% stitched rate), a `j1`/`j2` Kimi LLM-judge grades headline/key_finding
+  quality, and `x2` replaces `x3` with a same-top-figure EN/RU check.
 - **Frontend rebuilt as the Techanizer UI** (Figma design merged into `frontend/`, npm; the
   `figma_generated_ui/` download discarded after the merge): query box + Analysis/Monthly-report
-  tabs, RU/EN chrome, dark/light; Analysis renders structured tool output (skill bars, salary
-  tables, role cards) and highlights skill names inline via a surface-form dictionary; Monthly
-  report is a placeholder until the report job lands.
+  tabs, RU/EN chrome, dark/light; Analysis renders the typed contract (headline → h1,
+  key_finding → callout with `[n]` citation chips, tables → bars/tables, quotes → evidence
+  cards with the ≤8-chip cap) and highlights skill names inline via a surface-form dictionary;
+  Monthly report is a placeholder until the report job lands.
 - Review findings locked into PLAN.md: retention flips from 90-day-delete to keep-everything
   (`in_window` = current), skill tokens are fragmented (alias v2), salary coverage ~29%, HN loader
   only fetches the latest thread, `/ask` has no auth, no eval gating in CI.
@@ -80,5 +88,5 @@ Decisions go in DECISIONS.md. Nothing here restates what the code says.
 
 ## Next
 
-1. Follow `docs/PLAN.md` build order, step 1: the structured answer contract — schema →
-   prompt → SSE frame → UI contract render → eval-grader rewrite.
+1. Follow `docs/PLAN.md` build order, step 2: retention migration + `in_window` filters
+   (`analytics.py` + `vector_search.py`) + `last_seen` + HN all-threads.
