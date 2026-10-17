@@ -67,9 +67,17 @@ async def main() -> None:
     with psycopg.connect(db_url) as conn:
         agent = build_agent(model=args.model, conn=conn)
         result = await ask(agent, args.question)
-        print(result.output.answer)
-        for e in result.output.evidence:
-            print("-", e)
+        out = result.output
+        print(out.headline)
+        print(out.key_finding)
+        for t in out.tables:
+            print(f"[{t.kind}] {t.title}")
+            if t.headers:
+                print("  ", " | ".join(t.headers))
+            for row in t.rows:
+                print("  ", " | ".join("—" if c is None else str(c) for c in row))
+        for q in out.quotes:
+            print(f"[{q.id}] {q.company} — {q.title} ({q.source}): {q.text!r}")
 
         tool_calls_count = sum(
             1

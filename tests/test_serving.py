@@ -1,4 +1,5 @@
 import asyncio
+import json
 from collections.abc import AsyncIterator
 from types import SimpleNamespace
 from typing import Any, cast
@@ -9,106 +10,39 @@ from pydantic_ai import (
     Agent,
     AgentRunResultEvent,
     FunctionToolCallEvent,
-    FunctionToolResultEvent,
 )
 
-from jobmarket_agent.agent.schema import Answer
+from jobmarket_agent.agent.schema import Answer, Quote, Table
 from jobmarket_agent.serving.app import app, create_app
-from jobmarket_agent.serving.sse import sse_event, stream_answer, summarize_tool_result
+from jobmarket_agent.serving.sse import sse_event, stream_answer
 
 # Payload values come from the corpus, not invention: gold_40_candidates.json
 # row 1 (hn 48747990, "We The Flywheel") is the posting DECISIONS: schema cites
 # for the Agentic Engineer role and its claude code / cursor / aider stack.
-# similarity is not a gold field (runtime-computed) — any float does.
-_FULL_HIT = {
-    "raw_posting_id": 1234,
-    "role_index": 0,
-    "title": "Agentic Engineer",
-    "company": "We The Flywheel",
-    "location": "REMOTE (worldwide)",
-    "seniority": "unknown",
-    "remote_policy": "remote",
-    "employment_type": "contract",
-    "stack": ["claude code", "cursor", "aider"],
-    "salary_min": None,
-    "salary_max": None,
-    "salary_currency": None,
-    "description": "ship real software with AI coding agents (Claude Code, Cursor, Aider).",
-    "source": "hn",
-    "external_id": "48747990",
-    "similarity": 0.68,
-}
-_PROJECTED_HIT = {
-    "raw_posting_id": 1234,
-    "role_index": 0,
-    "title": "Agentic Engineer",
-    "company": "We The Flywheel",
-    "location": "REMOTE (worldwide)",
-    "seniority": "unknown",
-    "remote_policy": "remote",
-    "stack": ["claude code", "cursor", "aider"],
-    "salary_min": None,
-    "salary_max": None,
-    "salary_currency": None,
-    "source": "hn",
-    "similarity": 0.68,
-}
-_TOOL_CALL = {"name": "vector_search", "args": {"query": "agentic engineer", "limit": 5}}
-_TOOL_RESULT = {"name": "vector_search", "content": [_PROJECTED_HIT]}
-_TOOL_RESULT_FRAME = (
-    'event: tool_result\ndata: {"name": "vector_search", "content": ['
-    '{"raw_posting_id": 1234, "role_index": 0, "title": "Agentic Engineer", '
-    '"company": "We The Flywheel", "location": "REMOTE (worldwide)", '
-    '"seniority": "unknown", "remote_policy": "remote", "stack": ["claude code", '
-    '"cursor", "aider"], "salary_min": null, "salary_max": null, '
-    '"salary_currency": null, "source": "hn", "similarity": 0.68}]}\n\n'
+_ANSWER = Answer(
+    headline="Agentic Engineer roles at We The Flywheel lean on claude code, cursor and aider.",
+    key_finding="The strongest signal is claude code [1].",
+    tables=[Table(kind="bars", title="Skill frequency", rows=[["claude code", 30]])],
+    quotes=[
+        Quote(
+            id=1,
+            company="We The Flywheel",
+            title="Agentic Engineer",
+            source="hn",
+            text="ship real software with AI coding agents",
+        )
+    ],
 )
-_ROLE_DETAIL = {
-    "raw_posting_id": 1234,
-    "role_index": 0,
-    "company": "We The Flywheel",
-    "title": "Agentic Engineer",
-    "location": "REMOTE (worldwide)",
-    "seniority": "unknown",
-    "remote_policy": "remote",
-    "employment_type": "contract",
-    "stack": ["claude code", "cursor", "aider"],
-    "salary_min": None,
-    "salary_max": None,
-    "salary_currency": None,
-    "description": "ship real software with AI coding agents (Claude Code, Cursor, Aider).",
-    "source_quotes": {"company": "We The Flywheel"},
-    "source": "hn",
-    "external_id": "48747990",
-}
-_ROLE_DETAIL_TRIMMED = {k: v for k, v in _ROLE_DETAIL.items() if k != "description"}
-_ANSWER_TEXT = "Agentic Engineer roles at We The Flywheel lean on claude code, cursor and aider."
-_ANSWER_EVIDENCE = ["Agentic Engineer at We The Flywheel - claude code, cursor, aider - hn"]
+
+
+_TOOL_CALL_FRAME = 'event: tool_call\ndata: {"name": "vector_search"}\n\n'
 
 
 @pytest.mark.parametrize(
     ("event", "data", "expected"),
     [
-        (
-            "tool_call",
-            _TOOL_CALL,
-            (
-                "event: tool_call\n"
-                'data: {"name": "vector_search", "args": {"query": "agentic engineer", '
-                '"limit": 5}}\n\n'
-            ),
-        ),
-        ("tool_result", _TOOL_RESULT, _TOOL_RESULT_FRAME),
-        (
-            "answer",
-            {"answer": _ANSWER_TEXT, "evidence": _ANSWER_EVIDENCE},
-            (
-                "event: answer\n"
-                'data: {"answer": "Agentic Engineer roles at We The Flywheel lean on claude code, '
-                'cursor and aider.", "evidence": ["Agentic Engineer at We The Flywheel - '
-                'claude code, cursor, aider - hn"]}\n\n'
-            ),
-        ),
+        ("tool_call", {"name": "vector_search"}, _TOOL_CALL_FRAME),
+        ("error", {"message": "boom"}, 'event: error\ndata: {"message": "boom"}\n\n'),
     ],
 )
 def test_sse_event_format(event: str, data: object, expected: str) -> None:
@@ -167,52 +101,27 @@ def _collect(agent: object, question: str) -> list[str]:
     return asyncio.run(run())
 
 
+def _frame_data(frame: str) -> object:
+    # A frame is "event: X\ndata: <json>\n\n"; pull the data line back into a dict.
+    assert frame.startswith("event: ") and "\ndata: " in frame
+    return json.loads(frame.split("data: ", 1)[1].rstrip("\n"))
+
+
 def test_stream_answer_maps_events_to_frames() -> None:
-    answer = Answer(answer=_ANSWER_TEXT, evidence=_ANSWER_EVIDENCE)
     events = [
         FunctionToolCallEvent(
-            part=cast(Any, SimpleNamespace(tool_name="vector_search", args=_TOOL_CALL["args"])),
+            part=cast(Any, SimpleNamespace(tool_name="vector_search")),
             args_valid=True,
         ),
-        FunctionToolResultEvent(
-            part=cast(Any, SimpleNamespace(tool_name="vector_search", content=[_FULL_HIT])),
-        ),
-        AgentRunResultEvent(result=cast(Any, SimpleNamespace(output=answer))),
+        AgentRunResultEvent(result=cast(Any, SimpleNamespace(output=_ANSWER))),
     ]
 
-    assert _collect(_StubAgent(events), "agentic engineer") == [
-        (
-            "event: tool_call\n"
-            'data: {"name": "vector_search", "args": {"query": "agentic engineer", '
-            '"limit": 5}}\n\n'
-        ),
-        _TOOL_RESULT_FRAME,
-        (
-            "event: answer\n"
-            'data: {"answer": "Agentic Engineer roles at We The Flywheel lean on claude code, '
-            'cursor and aider.", "evidence": ["Agentic Engineer at We The Flywheel - '
-            'claude code, cursor, aider - hn"]}\n\n'
-        ),
-    ]
-
-
-@pytest.mark.parametrize(
-    ("name", "content", "expected"),
-    [
-        ("vector_search", [_FULL_HIT], [_PROJECTED_HIT]),
-        ("role_detail", _ROLE_DETAIL, _ROLE_DETAIL_TRIMMED),
-        ("role_detail", None, None),
-        (
-            "sql_query",
-            [{"skill": "python", "roles": 30, "postings": 25}],
-            [{"skill": "python", "roles": 30, "postings": 25}],
-        ),
-        ("future_tool", {"x": 1}, {"x": 1}),
-        ("vector_search", "error string", "error string"),
-    ],
-)
-def test_summarize_tool_result(name: str, content: object, expected: object) -> None:
-    assert summarize_tool_result(name, content) == expected
+    frames = _collect(_StubAgent(events), "agentic engineer")
+    assert len(frames) == 2
+    # tool_call is name-only (status line); the tool's output never crosses the wire.
+    assert frames[0] == 'event: tool_call\ndata: {"name": "vector_search"}\n\n'
+    # The answer frame is the whole contract, not hand-picked fields.
+    assert _frame_data(frames[1]) == _ANSWER.model_dump(mode="json")
 
 
 def test_stream_answer_emits_error_frame() -> None:
