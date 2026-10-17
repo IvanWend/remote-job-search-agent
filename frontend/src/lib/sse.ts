@@ -5,22 +5,25 @@
 // line followed by a `data:` line:
 //
 //   event: tool_call
-//   data: {"name":"vector_search","args":"{...}"}
+//   data: {"name":"vector_search"}
 //
 //   event: answer
-//   data: {"answer":"...","evidence":["..."]}
+//   data: {"headline":"...","key_finding":"...","tables":[...],"quotes":[...]}
 //
 // The server builds each frame with json.dumps, so the `data:` payload is always
 // a single line (newlines inside strings are escaped, never literal). That's why
 // splitting on a blank line is safe.
 
+import type { Answer } from './types'
+
 // A discriminated union: `event` tells us which shape `data` has. The render
-// layer matches on `event` to narrow the type.
+// layer matches on `event` to narrow the type. `tool_call` is name-only — it
+// only advances the status line; the answer's content arrives in one `answer`
+// frame carrying the full contract.
 export type StreamEvent =
-  | { event: "tool_call"; data: { name: string; args: unknown } }
-  | { event: "tool_result"; data: { name: string; content: unknown } }
-  | { event: "answer"; data: { answer: string; evidence: string[] } }
-  | { event: "error"; data: { message: string } }
+  | { event: 'tool_call'; data: { name: string } }
+  | { event: 'answer'; data: Answer }
+  | { event: 'error'; data: { message: string } }
 
 // Streams one question's answer, firing `onEvent` for every parsed frame.
 // Resolves when the stream ends; rejects on a non-2xx response or an abort.

@@ -1,6 +1,7 @@
-// UI chrome strings, both locales. The agent's *answer* is still English-only
-// (backend localisation is a later milestone); this covers the chrome so the
-// RU/EN toggle is visible and wired end-to-end.
+// UI chrome strings, both locales. The agent's *prose* (headline, key_finding,
+// quote text, table titles) is still English-only (backend localisation is a
+// later milestone); this covers the chrome so the RU/EN toggle is visible and
+// wired end-to-end.
 
 export type Lang = 'en' | 'ru'
 
@@ -22,21 +23,12 @@ type Messages = {
   reportTitle: string
   generatedMonthly: string
   emptyText: string
-  // Structured tool-result panels.
-  skills: string
-  salaryBySeniority: string
-  salaryByCurrency: string
-  topSalaries: string
-  matchingRoles: string
-  roleDetail: string
-  seniority: string
-  roles: string
-  median: string
-  currency: string
-  company: string
-  title: string
-  salary: string
+  // Contract render chrome.
+  keyFinding: string
+  evidence: string
+  salaryNotStated: string
   perMonth: string
+  more: (n: number) => string
 }
 
 const en: Messages = {
@@ -59,20 +51,11 @@ const en: Messages = {
   generatedMonthly: 'Reports are generated monthly',
   emptyText:
     'The first report will appear here when a complete month of market data is available.',
-  skills: 'Skill frequency',
-  salaryBySeniority: 'Salary by seniority',
-  salaryByCurrency: 'Salary by currency',
-  topSalaries: 'Top salaries',
-  matchingRoles: 'Matching roles',
-  roleDetail: 'Role detail',
-  seniority: 'Seniority',
-  roles: 'Roles',
-  median: 'Median /mo',
-  currency: 'Currency',
-  company: 'Company',
-  title: 'Title',
-  salary: 'Salary',
+  keyFinding: 'KEY FINDING',
+  evidence: 'Evidence',
+  salaryNotStated: 'Salary not stated',
   perMonth: '/mo',
+  more: (n) => `+${n} more`,
 }
 
 const ru: Messages = {
@@ -94,20 +77,11 @@ const ru: Messages = {
   generatedMonthly: 'Отчёты формируются раз в месяц',
   emptyText:
     'Первый отчёт появится здесь, когда будет доступен полный месяц рыночных данных.',
-  skills: 'Частота навыков',
-  salaryBySeniority: 'Зарплата по уровню',
-  salaryByCurrency: 'Зарплата по валюте',
-  topSalaries: 'Топ зарплат',
-  matchingRoles: 'Подходящие роли',
-  roleDetail: 'Детали вакансии',
-  seniority: 'Уровень',
-  roles: 'Роли',
-  median: 'Медиана /мес',
-  currency: 'Валюта',
-  company: 'Компания',
-  title: 'Должность',
-  salary: 'Зарплата',
+  keyFinding: 'КЛЮЧЕВОЙ ВЫВОД',
+  evidence: 'Подтверждения',
+  salaryNotStated: 'Зарплата не указана',
   perMonth: '/мес',
+  more: (n) => `+${n} ещё`,
 }
 
 export const ui: Record<Lang, Messages> = { en, ru }

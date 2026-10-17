@@ -1,56 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import { Icon } from './Icon'
-import { ToolPanels } from './panels'
+import { ContractAnswer } from './contract'
 import { streamAnswer, type StreamEvent } from '../lib/sse'
 import { statusFor } from '../lib/status'
-import { makeHighlightPlugin } from '../lib/highlight'
 import { ui, questions, type Lang } from '../lib/i18n'
-import type { ToolStep } from '../lib/types'
-
-type Result = { question: string; answer: string }
-
-function parseArgs(args: unknown): Record<string, unknown> {
-  if (typeof args === 'string') {
-    try {
-      return JSON.parse(args) as Record<string, unknown>
-    } catch {
-      return {}
-    }
-  }
-  return args && typeof args === 'object' ? (args as Record<string, unknown>) : {}
-}
-
-// Skills mentioned in the tool output, used to highlight them inline in the
-// prose answer. Sourced from skill_frequency rows and vector_search stacks.
-function collectSkills(steps: ToolStep[]): string[] {
-  const skills = new Set<string>()
-  for (const step of steps) {
-    if (
-      step.name === 'sql_query' &&
-      step.args.query === 'skill_frequency' &&
-      Array.isArray(step.content)
-    ) {
-      for (const row of step.content as { skill?: unknown }[]) {
-        if (typeof row.skill === 'string') skills.add(row.skill)
-      }
-    } else if (step.name === 'vector_search' && Array.isArray(step.content)) {
-      for (const hit of step.content as { stack?: unknown }[]) {
-        if (Array.isArray(hit.stack)) {
-          for (const skill of hit.stack) if (typeof skill === 'string') skills.add(skill)
-        }
-      }
-    }
-  }
-  return Array.from(skills)
-}
+import type { Answer } from '../lib/types'
 
 export function Analysis({ lang }: { lang: Lang }) {
   const t = ui[lang]
   const [query, setQuery] = useState(t.defaultQuery)
-  const [result, setResult] = useState<Result | null>(null)
-  const [steps, setSteps] = useState<ToolStep[]>([])
+  const [answer, setAnswer] = useState<Answer | null>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [streaming, setStreaming] = useState(false)
@@ -69,29 +28,13 @@ export function Analysis({ lang }: { lang: Lang }) {
     previousLang.current = lang
   }, [lang])
 
-  function handleEvent(e: StreamEvent, question: string) {
+  function handleEvent(e: StreamEvent) {
     switch (e.event) {
       case 'tool_call':
-        setSteps((prev) => [
-          ...prev,
-          { name: e.data.name, args: parseArgs(e.data.args), content: null },
-        ])
         setStatus(statusFor(e.data.name, lang))
         break
-      case 'tool_result':
-        // pydantic-ai emits every tool_call for a turn before the tool_results,
-        // so results must pair FIFO (first unresolved call), not LIFO — LIFO
-        // swaps the payloads whenever one turn issues more than one tool call.
-        setSteps((prev) => {
-          const next = [...prev]
-          let index = next.findIndex((s) => s.content === null && s.name === e.data.name)
-          if (index === -1) index = next.findIndex((s) => s.content === null)
-          if (index !== -1) next[index] = { ...next[index], content: e.data.content }
-          return next
-        })
-        break
       case 'answer':
-        setResult({ question, answer: e.data.answer })
+        setAnswer(e.data)
         setStatus(null)
         setStreaming(false)
         break
@@ -107,15 +50,14 @@ export function Analysis({ lang }: { lang: Lang }) {
     const text = raw.trim()
     if (!text || streaming) return
     setQuery(text)
-    setResult(null)
-    setSteps([])
+    setAnswer(null)
     setError(null)
     setStatus(t.thinking)
     setStreaming(true)
 
     const controller = new AbortController()
     controllerRef.current = controller
-    streamAnswer(text, (e) => handleEvent(e, text), controller.signal).catch((err) => {
+    streamAnswer(text, handleEvent, controller.signal).catch((err) => {
       if (controller.signal.aborted) return // cancel is a stop, not an error
       setError(err instanceof Error ? err.message : String(err))
       setStatus(null)
@@ -131,7 +73,6 @@ export function Analysis({ lang }: { lang: Lang }) {
   }
 
   const suggestions = questions[lang].flatMap((section) => section.items)
-  const skillVocab = collectSkills(steps)
 
   return (
     <div className="flex h-full flex-col">
@@ -183,7 +124,7 @@ export function Analysis({ lang }: { lang: Lang }) {
               <span>{status}</span>
             </>
           )}
-          {result && !status && !error && (
+          {answer && !status && !error && (
             <span className="text-[var(--accent-text)]">{t.complete}</span>
           )}
         </div>
@@ -251,32 +192,21 @@ export function Analysis({ lang }: { lang: Lang }) {
                   {error}
                 </p>
               </div>
-            ) : streaming && result === null ? (
+            ) : streaming && answer === null ? (
               <div className="space-y-6">
                 <div className="h-5 w-2/3 animate-pulse bg-[var(--fill-soft)]" />
                 <div className="h-3 w-full animate-pulse bg-[var(--fill-soft)]" />
                 <div className="h-3 w-5/6 animate-pulse bg-[var(--fill-soft)]" />
                 <div className="h-3 w-4/6 animate-pulse bg-[var(--fill-soft)]" />
               </div>
-            ) : result !== null ? (
+            ) : answer !== null ? (
               <>
                 <div className="mb-6 flex items-center justify-between border-b border-[var(--border)] pb-4">
                   <p className="font-mono text-[9px] tracking-[0.12em] text-[var(--accent-text)]">
                     {t.complete}
                   </p>
                 </div>
-                <h1 className="text-[17px] font-semibold leading-[1.35] text-[var(--text-primary)]">
-                  {result.question}
-                </h1>
-                <div className="prose prose-sm mt-6 max-w-none">
-                  <Markdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[makeHighlightPlugin(skillVocab)]}
-                  >
-                    {result.answer}
-                  </Markdown>
-                </div>
-                <ToolPanels steps={steps} lang={lang} />
+                <ContractAnswer answer={answer} lang={lang} />
               </>
             ) : (
               <div className="mx-auto flex max-w-xl flex-col items-center justify-center gap-6 py-16 text-center">
